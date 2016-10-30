@@ -91,14 +91,19 @@ function setIconForTab(tab, state) {
     }
 }
 
+function getMediaElementsFromDocument(document) {
+    let mediaElements = [];
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+    return mediaElements;
+}
+
 function toggleMediaElementsMute(tab) {
     if (tab.getAttribute("noisy") != null) {
         let muted = (tab.getAttribute("noisy") == "true");
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
-        let mediaElements = [];
-        mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
-        mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+        let mediaElements = getMediaElementsFromDocument(document);
         for (let mediaElement of mediaElements) {
             mediaElement.muted = muted;
         }
@@ -153,9 +158,7 @@ function plugIntoTab(tab) {
     setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    let mediaElements = [];
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+    let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
         addMediaElementEventListeners(mediaElement);
         if (!mediaElement.paused) {
@@ -181,9 +184,7 @@ function plugIntoTab(tab) {
 function unplugFromTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    let mediaElements = [];
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+    let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
         removeMediaElementListeners(mediaElement);
     }

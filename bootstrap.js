@@ -43,17 +43,19 @@ function createIconForTab(tab) {
     if (tabLabel) {
         let document = tab.ownerDocument;
         let icon = document.createElementNS(XUL_NS, "xul:image");
+        let normalOpacity = "0.75";
+        let hoverOpacity = "1.0";
         icon.className = ENT_ICON_CLASS;
-        icon.style.opacity = "0.75";
+        icon.style.opacity = normalOpacity;
         icon.addEventListener("mousedown", function(event) {
             toggleMediaElementsMute(tab);
             event.stopPropagation();
         }, true);
         icon.onmouseover = function() {
-            icon.style.opacity = "1.0";
+            icon.style.opacity = hoverOpacity;
         };
         icon.onmouseout = function() {
-            icon.style.opacity = "0.75";
+            icon.style.opacity = normalOpacity;
         };
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
         return true;

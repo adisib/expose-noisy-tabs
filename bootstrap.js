@@ -128,6 +128,13 @@ function onMediaElementPause(event) {
     setIconForTab(tab, STATE_NOT_PLAYING);
 }
 
+function onMediaElementEmptied(event) {
+    let mediaElement = event.target;
+    let document = mediaElement.ownerDocument;
+    let tab = findTabForDocument(document);
+    setIconForTab(tab, STATE_NOT_PLAYING);
+}
+
 function plugIntoTab(tab) {
     setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
@@ -139,6 +146,7 @@ function plugIntoTab(tab) {
         mediaElement.addEventListener("playing", onMediaElementPlaying);
         mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
         mediaElement.addEventListener("pause", onMediaElementPause);
+        mediaElement.addEventListener("emptied", onMediaElementEmptied);
         if (!mediaElement.paused) {
             setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
         }
@@ -152,6 +160,7 @@ function plugIntoTab(tab) {
                     mediaElement.addEventListener("playing", onMediaElementPlaying);
                     mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
                     mediaElement.addEventListener("pause", onMediaElementPause);
+                    mediaElement.addEventListener("emptied", onMediaElementEmptied);
                     if (!mediaElement.paused) {
                         setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
                     }
@@ -172,6 +181,7 @@ function unplugFromTab(tab) {
         mediaElement.removeEventListener("playing", onMediaElementPlaying);
         mediaElement.removeEventListener("volumechange", onMediaElementVolumeChange);
         mediaElement.removeEventListener("pause", onMediaElementPause);
+        mediaElement.removeEventListener("emptied", onMediaElementEmptied);
     }
     if (tab.entObserver) {
         tab.entObserver.disconnect();

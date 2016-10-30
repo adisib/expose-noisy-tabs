@@ -1,2 +1,1 @@
-bootstrap.js linguist-vendored
-build.sh linguist-vendored=false
+*.sh linguist-language=JavaScript

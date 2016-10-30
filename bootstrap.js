@@ -91,6 +91,30 @@ function setIconForTab(tab, state) {
     }
 }
 
+function updateIconForTab(tab) {
+    if (hasTabIcon(tab)) {
+        setIconForTab(tab, STATE_NOT_PLAYING);
+    }
+    let browser = tab.linkedBrowser;
+    let document = browser.contentDocument;
+    let mediaElements = getMediaElementsFromDocument(document);
+    if (mediaElements.length > 0) {
+        let anyNonPausedMediaElements = false;
+        let anyNonMutedMediaElements = false;
+        for (mediaElement of mediaElements) {
+            if (!mediaElement.paused) {
+                anyNonPausedMediaElements = true;
+                if (!mediaElement.muted) {
+                    anyNonMutedMediaElements = true;
+                }
+            }
+        }
+        if (anyNonPausedMediaElements) {
+            setIconForTab(tab, anyNonMutedMediaElements ? STATE_PLAYING : STATE_PLAYING_MUTED);
+        }
+    }
+}
+
 function getMediaElementsFromDocument(document) {
     let mediaElements = [];
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
@@ -170,20 +194,17 @@ function documentMutationEventListener(tab) {
 }
 
 function plugIntoTab(tab) {
-    setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
         addMediaElementEventListeners(mediaElement);
-        if (!mediaElement.paused) {
-            setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
-        }
     }
     let window = tab.ownerDocument.defaultView;
     let tabDocumentMutationEventListener = new documentMutationEventListener(tab);
     tab["entObserver"] = new window.MutationObserver(tabDocumentMutationEventListener.onMutation);
     tab.entObserver.observe(document.documentElement, {childList: true, subtree: true});
+    updateIconForTab(tab);
 }
 
 function unplugFromTab(tab) {

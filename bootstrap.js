@@ -138,30 +138,28 @@ function onMediaElementPlaying(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
+    updateIconForTab(tab);
 }
 
 function onMediaElementVolumeChange(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    if (!mediaElement.paused) {
-        setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
-    }
+    updateIconForTab(tab);
 }
 
 function onMediaElementPause(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    setIconForTab(tab, STATE_NOT_PLAYING);
+    updateIconForTab(tab);
 }
 
 function onMediaElementEmptied(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    setIconForTab(tab, STATE_NOT_PLAYING);
+    updateIconForTab(tab);
 }
 
 function addMediaElementEventListeners(mediaElement) {

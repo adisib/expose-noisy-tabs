@@ -129,6 +129,7 @@ function onMediaElementPause(event) {
 }
 
 function plugIntoTab(tab) {
+    setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     let mediaElements = [];

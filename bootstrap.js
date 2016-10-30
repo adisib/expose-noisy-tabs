@@ -154,6 +154,21 @@ function removeMediaElementListeners(mediaElement) {
     mediaElement.removeEventListener("emptied", onMediaElementEmptied);
 }
 
+function documentMutationEventListener(tab) {
+    this.onMutation = function(mutations) {
+        mutations.forEach(function(mutation) {
+            for (let addedNode of mutation.addedNodes) {
+                if (addedNode.tagName == "VIDEO" || addedNode.tagName == "AUDIO") {
+                    addMediaElementEventListeners(addedNode);
+                    if (!mediaElement.paused) {
+                        setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
+                    }
+                }
+            }
+        });
+    };
+}
+
 function plugIntoTab(tab) {
     setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
@@ -166,18 +181,8 @@ function plugIntoTab(tab) {
         }
     }
     let window = tab.ownerDocument.defaultView;
-    tab["entObserver"] = new window.MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            for (let addedNode of mutation.addedNodes) {
-                if (addedNode.tagName == "VIDEO" || addedNode.tagName == "AUDIO") {
-                    addMediaElementEventListeners(addedNode);
-                    if (!mediaElement.paused) {
-                        setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
-                    }
-                }
-            }
-        });
-    });
+    let tabDocumentMutationEventListener = new documentMutationEventListener(tab);
+    tab["entObserver"] = new window.MutationObserver(tabDocumentMutationEventListener.onMutation);
     tab.entObserver.observe(document.documentElement, {childList: true, subtree: true});
 }
 

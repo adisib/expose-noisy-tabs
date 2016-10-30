@@ -135,6 +135,20 @@ function onMediaElementEmptied(event) {
     setIconForTab(tab, STATE_NOT_PLAYING);
 }
 
+function addMediaElementEventListeners(mediaElement) {
+    mediaElement.addEventListener("playing", onMediaElementPlaying);
+    mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
+    mediaElement.addEventListener("pause", onMediaElementPause);
+    mediaElement.addEventListener("emptied", onMediaElementEmptied);
+}
+
+function removeMediaElementListeners(mediaElement) {
+    mediaElement.removeEventListener("playing", onMediaElementPlaying);
+    mediaElement.removeEventListener("volumechange", onMediaElementVolumeChange);
+    mediaElement.removeEventListener("pause", onMediaElementPause);
+    mediaElement.removeEventListener("emptied", onMediaElementEmptied);
+}
+
 function plugIntoTab(tab) {
     setIconForTab(tab, STATE_NOT_PLAYING);
     let browser = tab.linkedBrowser;
@@ -143,10 +157,7 @@ function plugIntoTab(tab) {
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
     for (let mediaElement of mediaElements) {
-        mediaElement.addEventListener("playing", onMediaElementPlaying);
-        mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
-        mediaElement.addEventListener("pause", onMediaElementPause);
-        mediaElement.addEventListener("emptied", onMediaElementEmptied);
+        addMediaElementEventListeners(mediaElement);
         if (!mediaElement.paused) {
             setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
         }
@@ -156,11 +167,7 @@ function plugIntoTab(tab) {
         mutations.forEach(function(mutation) {
             for (let addedNode of mutation.addedNodes) {
                 if (addedNode.tagName == "VIDEO" || addedNode.tagName == "AUDIO") {
-                    let mediaElement = addedNode;
-                    mediaElement.addEventListener("playing", onMediaElementPlaying);
-                    mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
-                    mediaElement.addEventListener("pause", onMediaElementPause);
-                    mediaElement.addEventListener("emptied", onMediaElementEmptied);
+                    addMediaElementEventListeners(addedNode);
                     if (!mediaElement.paused) {
                         setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
                     }
@@ -178,10 +185,7 @@ function unplugFromTab(tab) {
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
     for (let mediaElement of mediaElements) {
-        mediaElement.removeEventListener("playing", onMediaElementPlaying);
-        mediaElement.removeEventListener("volumechange", onMediaElementVolumeChange);
-        mediaElement.removeEventListener("pause", onMediaElementPause);
-        mediaElement.removeEventListener("emptied", onMediaElementEmptied);
+        removeMediaElementListeners(mediaElement);
     }
     if (tab.entObserver) {
         tab.entObserver.disconnect();

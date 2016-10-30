@@ -180,16 +180,24 @@ function removeMediaElementListeners(mediaElement) {
 
 function documentMutationEventListener(tab) {
     this.onMutation = function(mutations) {
+        let messedWithMediaElements = false;
         mutations.forEach(function(mutation) {
             for (let addedNode of mutation.addedNodes) {
                 if (addedNode.tagName == "VIDEO" || addedNode.tagName == "AUDIO") {
                     addMediaElementEventListeners(addedNode);
-                    if (!mediaElement.paused) {
-                        setIconForTab(tab, mediaElement.muted ? STATE_PLAYING_MUTED : STATE_PLAYING);
-                    }
+                    messedWithMediaElements = true;
+                }
+            }
+            for (let removedNode of mutation.removedNodes) {
+                if (removedNode.tagName == "VIDEO" || removedNode.tagName == "AUDIO") {
+                    messedWithMediaElements = true;
+                    break;
                 }
             }
         });
+        if (messedWithMediaElements) {
+            updateIconForTab(tab);
+        }
     };
 }
 

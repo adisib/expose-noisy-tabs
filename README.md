@@ -1,4 +1,6 @@
 ## Expose Noisy Tabs
+![Preview](http://i.imgur.com/PCnQVvr.png)
+
 This is an extension for Pale Moon web browser which exposes noisy tabs containing audio or video elements. It adds indicator icons for tabs with sound being played on their websites.
 
 ### Building

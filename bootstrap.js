@@ -202,15 +202,17 @@ function documentMutationEventListener(tab) {
 function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    let mediaElements = getMediaElementsFromDocument(document);
-    for (let mediaElement of mediaElements) {
-        addMediaElementEventListeners(mediaElement);
+    if (document.body && !document.entObserver) {
+        let mediaElements = getMediaElementsFromDocument(document);
+        for (let mediaElement of mediaElements) {
+            addMediaElementEventListeners(mediaElement);
+        }
+        let window = document.defaultView;
+        let tabDocumentMutationEventListener = new documentMutationEventListener(tab);
+        document["entObserver"] = new window.MutationObserver(tabDocumentMutationEventListener.onMutation);
+        document.entObserver.observe(document.body, {childList: true, subtree: true});
+        updateIconForTab(tab);
     }
-    let window = tab.ownerDocument.defaultView;
-    let tabDocumentMutationEventListener = new documentMutationEventListener(tab);
-    tab["entObserver"] = new window.MutationObserver(tabDocumentMutationEventListener.onMutation);
-    tab.entObserver.observe(document.documentElement, {childList: true, subtree: true});
-    updateIconForTab(tab);
 }
 
 function unplugFromTab(tab) {
@@ -220,9 +222,9 @@ function unplugFromTab(tab) {
     for (let mediaElement of mediaElements) {
         removeMediaElementListeners(mediaElement);
     }
-    if (tab.entObserver) {
-        tab.entObserver.disconnect();
-        tab.entObserver = undefined;
+    if (document.entObserver) {
+        document.entObserver.disconnect();
+        document.entObserver = undefined;
     }
     clearIconFromTab(tab);
 }

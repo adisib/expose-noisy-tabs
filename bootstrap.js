@@ -64,8 +64,8 @@ function createIconForTab(tab) {
 }
 
 function clearIconFromTab(tab) {
-    let tabStack = tab.boxObject.firstChild;
-    let entIcon = tabStack.getElementsByClassName(ENT_ICON_CLASS)[0];
+    let document = tab.ownerDocument;
+    let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
     if (entIcon) {
         entIcon.parentNode.removeChild(entIcon);
     }

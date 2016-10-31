@@ -102,10 +102,12 @@ function updateIconForTab(tab) {
         let anyNonPausedMediaElements = false;
         let anyNonMutedMediaElements = false;
         for (mediaElement of mediaElements) {
-            if (!mediaElement.paused) {
-                anyNonPausedMediaElements = true;
-                if (!mediaElement.muted) {
-                    anyNonMutedMediaElements = true;
+            if (mediaElement.mozHasAudio) {
+                if (!mediaElement.paused) {
+                    anyNonPausedMediaElements = true;
+                    if (!mediaElement.muted) {
+                        anyNonMutedMediaElements = true;
+                    }
                 }
             }
         }

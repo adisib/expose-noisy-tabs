@@ -33,13 +33,13 @@ function findTabForDocument(document) {
 }
 
 function hasTabIcon(tab) {
-    let tabStack = tab.boxObject.firstChild;
-    return (tabStack.getElementsByClassName("entIcon").length > 0);
+    let document = tab.ownerDocument;
+    return (document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS) != null);
 }
 
 function createIconForTab(tab) {
-    let tabStack = tab.boxObject.firstChild;
-    let tabLabel = tabStack.getElementsByClassName("tab-text tab-label")[0];
+    let document = tab.ownerDocument;
+    let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
     if (tabLabel) {
         let document = tab.ownerDocument;
         let icon = document.createElementNS(XUL_NS, "xul:image");
@@ -74,8 +74,8 @@ function clearIconFromTab(tab) {
 
 function setIconForTab(tab, state) {
     if (hasTabIcon(tab) || createIconForTab(tab)) {
-        let tabStack = tab.boxObject.firstChild;
-        let entIcon = tabStack.getElementsByClassName(ENT_ICON_CLASS)[0];
+        let document = tab.ownerDocument;
+        let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
         if (state == STATE_PLAYING) {
             entIcon.src = NOISY_ICON_SRC;
             entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
@@ -242,7 +242,7 @@ function onTabMove(event) {
 function fixCloseTabButton(event) {
     let tab = event.target;
     let document = tab.ownerDocument;
-    let closeButton = document.getAnonymousElementByAttribute(tab, "anonid", "close-button");
+    let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
     closeButton.setAttribute("selected", tab.selected);
 }
 

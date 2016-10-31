@@ -92,28 +92,25 @@ function setIconForTab(tab, state) {
 }
 
 function updateIconForTab(tab) {
-    if (hasTabIcon(tab)) {
-        setIconForTab(tab, STATE_NOT_PLAYING);
-    }
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     let mediaElements = getMediaElementsFromDocument(document);
-    if (mediaElements.length > 0) {
-        let anyNonPausedMediaElements = false;
-        let anyNonMutedMediaElements = false;
-        for (mediaElement of mediaElements) {
-            if (mediaElement.mozHasAudio) {
-                if (!mediaElement.paused) {
-                    anyNonPausedMediaElements = true;
-                    if (!mediaElement.muted) {
-                        anyNonMutedMediaElements = true;
-                    }
+    let hasAnyNonPausedMediaElements = false;
+    let hasAnyNonMutedMediaElements = false;
+    for (mediaElement of mediaElements) {
+        if (mediaElement.mozHasAudio) {
+            if (!mediaElement.paused) {
+                hasAnyNonPausedMediaElements = true;
+                if (!mediaElement.muted) {
+                    hasAnyNonMutedMediaElements = true;
                 }
             }
         }
-        if (anyNonPausedMediaElements) {
-            setIconForTab(tab, anyNonMutedMediaElements ? STATE_PLAYING : STATE_PLAYING_MUTED);
-        }
+    }
+    if (hasAnyNonPausedMediaElements) {
+        setIconForTab(tab, hasAnyNonMutedMediaElements ? STATE_PLAYING : STATE_PLAYING_MUTED);
+    } else if (hasTabIcon(tab)) {
+        setIconForTab(tab, STATE_NOT_PLAYING);
     }
 }
 

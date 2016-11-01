@@ -48,8 +48,10 @@ function createIconForTab(tab) {
         icon.className = ENT_ICON_CLASS;
         icon.style.opacity = normalOpacity;
         icon.addEventListener("mousedown", function(event) {
-            toggleMediaElementsMute(tab);
-            event.stopPropagation();
+            if (event.button == 0) {
+                toggleMediaElementsMute(tab);
+                event.stopPropagation();
+            }
         }, true);
         icon.onmouseover = function() {
             icon.style.opacity = hoverOpacity;

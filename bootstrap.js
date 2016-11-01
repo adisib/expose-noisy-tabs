@@ -93,9 +93,7 @@ function setIconForTab(tab, state) {
     }
 }
 
-function updateIconForTab(tab) {
-    let browser = tab.linkedBrowser;
-    let document = browser.contentDocument;
+function updateStatesForDocument(states, document) {
     let mediaElements = getMediaElementsFromDocument(document);
     let hasAnyNonPausedMediaElements = false;
     let hasAnyNonMutedMediaElements = false;
@@ -111,7 +109,33 @@ function updateIconForTab(tab) {
         }
     }
     if (hasAnyNonPausedMediaElements) {
-        setIconForTab(tab, hasAnyNonMutedMediaElements ? STATE_PLAYING : STATE_PLAYING_MUTED);
+        if (hasAnyNonMutedMediaElements) {
+            states.playing = true;
+        } else {
+            states.playingMuted = true;
+        }
+    }
+    let frames = document.getElementsByTagName("iframe");
+    for (let frame of frames) {
+        let frameWindow = frame.contentWindow;
+        if (frameWindow != frameWindow.top) {
+            updateStatesForDocument(states, frameWindow.document);
+        }
+    }
+}
+
+function updateIconForTab(tab) {
+    let states = {
+        playing: false,
+        playingMuted: false
+    }
+    let browser = tab.linkedBrowser;
+    let document = browser.contentDocument;
+    updateStatesForDocument(states, document);
+    if (states.playing) {
+        setIconForTab(tab, STATE_PLAYING);
+    } else if (states.playingMuted) {
+        setIconForTab(tab, STATE_PLAYING_MUTED);
     } else if (hasTabIcon(tab)) {
         setIconForTab(tab, STATE_NOT_PLAYING);
     }
@@ -124,15 +148,26 @@ function getMediaElementsFromDocument(document) {
     return mediaElements;
 }
 
+function toggleMuteMediaElementsInDocument(document, mute) {
+    let mediaElements = getMediaElementsFromDocument(document);
+    for (let mediaElement of mediaElements) {
+        mediaElement.muted = mute;
+    }
+    let frames = document.getElementsByTagName("iframe");
+    for (let frame of frames) {
+        let frameWindow = frame.contentWindow;
+        if (frameWindow != frameWindow.top) {
+            toggleMuteMediaElementsInDocument(frameWindow.document, mute);
+        }
+    }
+}
+
 function toggleMediaElementsMute(tab) {
     if (tab.getAttribute("noisy") != null) {
-        let muted = (tab.getAttribute("noisy") == "true");
+        let mute = (tab.getAttribute("noisy") == "true");
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
-        let mediaElements = getMediaElementsFromDocument(document);
-        for (let mediaElement of mediaElements) {
-            mediaElement.muted = muted;
-        }
+        toggleMuteMediaElementsInDocument(document, mute);
     }
 }
 
@@ -171,15 +206,41 @@ function addMediaElementEventListeners(mediaElement) {
     mediaElement.addEventListener("emptied", onMediaElementEmptied);
 }
 
-function removeMediaElementListeners(mediaElement) {
+function removeMediaElementEventListeners(mediaElement) {
     mediaElement.removeEventListener("playing", onMediaElementPlaying);
     mediaElement.removeEventListener("volumechange", onMediaElementVolumeChange);
     mediaElement.removeEventListener("pause", onMediaElementPause);
     mediaElement.removeEventListener("emptied", onMediaElementEmptied);
 }
 
-function documentMutationEventListener(tab) {
-    this.onMutation = function(mutations) {
+function mutationEventListener(tab) {
+    this.onFramesMutation = function(mutations) {
+        let messedWithFrames = false;
+        mutations.forEach(function(mutation) {
+            for (let addedNode of mutation.addedNodes) {
+                if (addedNode.tagName == "IFRAME") {
+                    if (addedNode.contentWindow) {
+                        let document = addedNode.contentWindow.document;
+                        plugIntoDocument(document, tab);
+                        messedWithFrames = true;
+                    }
+                }
+            }
+            for (let removedNode of mutation.removedNodes) {
+                if (removedNode.tagName == "IFRAME") {
+                    if (removedNode.contentWindow) {
+                        messedWithFrames = true;
+                        break;
+                    }
+                }
+            }
+        });
+        if (messedWithFrames) {
+            updateIconForTab(tab);
+        }
+    };
+    
+    this.onMediaElementsMutation = function(mutations) {
         let messedWithMediaElements = false;
         mutations.forEach(function(mutation) {
             for (let addedNode of mutation.addedNodes) {
@@ -201,18 +262,56 @@ function documentMutationEventListener(tab) {
     };
 }
 
-function plugIntoTab(tab) {
-    let browser = tab.linkedBrowser;
-    let document = browser.contentDocument;
-    if (document.body && !document.entObserver) {
+function plugIntoDocument(document, tab) {
+    if (document.body && !document.entMediaElementsObserver) {
         let mediaElements = getMediaElementsFromDocument(document);
         for (let mediaElement of mediaElements) {
             addMediaElementEventListeners(mediaElement);
         }
         let window = document.defaultView;
-        let tabDocumentMutationEventListener = new documentMutationEventListener(tab);
-        document["entObserver"] = new window.MutationObserver(tabDocumentMutationEventListener.onMutation);
-        document.entObserver.observe(document.body, {childList: true, subtree: true});
+        let documentMutationEventListener = new mutationEventListener(tab);
+        document["entMediaElementsObserver"] = new window.MutationObserver(documentMutationEventListener.onMediaElementsMutation);
+        document.entMediaElementsObserver.observe(document.body, {childList: true, subtree: true});
+        document["entFramesObserver"] = new window.MutationObserver(documentMutationEventListener.onFramesMutation);
+        document.entFramesObserver.observe(document.body, {childList: true, subtree: true});
+        let frames = document.getElementsByTagName("iframe");
+        for (let frame of frames) {
+            let frameWindow = frame.contentWindow;
+            if (frameWindow != frameWindow.top) {
+                plugIntoDocument(frameWindow.document, tab);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+function unplugFromDocument(document) {
+    if (document.body && document.entMediaElementsObserver) {
+        let mediaElements = getMediaElementsFromDocument(document);
+        for (let mediaElement of mediaElements) {
+            removeMediaElementEventListeners(mediaElement);
+        }
+        if (document.entMediaElementsObserver && document.entFramesObserver) {
+            document.entMediaElementsObserver.disconnect();
+            document.entMediaElementsObserver = undefined;
+            document.entFramesObserver.disconnect();
+            document.entFramesObserver = undefined;
+        }
+        let frames = document.getElementsByTagName("iframe");
+        for (let frame of frames) {
+            let frameWindow = frame.contentWindow;
+            if (frameWindow != frameWindow.top) {
+                unplugFromDocument(frameWindow.document);
+            }
+        }
+    }
+}
+
+function plugIntoTab(tab) {
+    let browser = tab.linkedBrowser;
+    let document = browser.contentDocument;
+    if (plugIntoDocument(document, tab)) {
         updateIconForTab(tab);
     }
 }
@@ -220,21 +319,16 @@ function plugIntoTab(tab) {
 function unplugFromTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    let mediaElements = getMediaElementsFromDocument(document);
-    for (let mediaElement of mediaElements) {
-        removeMediaElementListeners(mediaElement);
-    }
-    if (document.entObserver) {
-        document.entObserver.disconnect();
-        document.entObserver = undefined;
-    }
+    unplugFromDocument(document);
     clearIconFromTab(tab);
 }
 
 function onDocumentLoad(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
-    plugIntoTab(tab);
+    if (plugIntoDocument(document, tab)) {
+        updateIconForTab(tab);
+    }
 }
 
 function onTabMove(event) {

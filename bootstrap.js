@@ -215,29 +215,16 @@ function removeMediaElementEventListeners(mediaElement) {
 
 function mutationEventListener(tab) {
     this.onFramesMutation = function(mutations) {
-        let messedWithFrames = false;
         mutations.forEach(function(mutation) {
-            for (let addedNode of mutation.addedNodes) {
-                if (addedNode.tagName == "IFRAME") {
-                    if (addedNode.contentWindow) {
-                        let document = addedNode.contentWindow.document;
-                        plugIntoDocument(document, tab);
-                        messedWithFrames = true;
-                    }
-                }
-            }
             for (let removedNode of mutation.removedNodes) {
                 if (removedNode.tagName == "IFRAME") {
                     if (removedNode.contentWindow) {
-                        messedWithFrames = true;
+                        updateIconForTab(tab);
                         break;
                     }
                 }
             }
         });
-        if (messedWithFrames) {
-            updateIconForTab(tab);
-        }
     };
     
     this.onMediaElementsMutation = function(mutations) {

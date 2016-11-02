@@ -251,7 +251,7 @@ function mutationEventListener(tab) {
 }
 
 function plugIntoDocument(document, tab) {
-    if (document.body && !document.entMediaElementsObserver) {
+    if (document && document.body && !document.entMediaElementsObserver) {
         let mediaElements = getMediaElementsFromDocument(document);
         for (let mediaElement of mediaElements) {
             addMediaElementEventListeners(mediaElement);

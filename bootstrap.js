@@ -1,4 +1,5 @@
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/Timer.jsm");
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const EXT_NAME = "expose-noisy-tabs";
@@ -313,9 +314,11 @@ function unplugFromTab(tab) {
 function onDocumentLoad(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
-    if (plugIntoDocument(document, tab)) {
-        updateIconForTab(tab);
-    }
+    setTimeout(function() {
+        if (plugIntoDocument(document, tab)) {
+            updateIconForTab(tab);
+        }
+    }, 1000);
 }
 
 function onTabMove(event) {

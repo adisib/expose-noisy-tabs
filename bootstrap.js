@@ -320,7 +320,7 @@ function onDocumentLoad(event) {
 
 function onTabMove(event) {
     let tab = event.target;
-    plugIntoTab(tab);
+    updateIconForTab(tab);
 }
 
 function fixCloseTabButton(event) {

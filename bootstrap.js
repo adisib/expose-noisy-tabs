@@ -126,19 +126,21 @@ function updateStatesForDocument(states, document) {
 }
 
 function updateIconForTab(tab) {
-    let states = {
-        playing: false,
-        playingMuted: false
-    }
     let browser = tab.linkedBrowser;
-    let document = browser.contentDocument;
-    updateStatesForDocument(states, document);
-    if (states.playing) {
-        setIconForTab(tab, STATE_PLAYING);
-    } else if (states.playingMuted) {
-        setIconForTab(tab, STATE_PLAYING_MUTED);
-    } else if (hasTabIcon(tab)) {
-        setIconForTab(tab, STATE_NOT_PLAYING);
+    if (browser) {
+        let document = browser.contentDocument;
+        let states = {
+            playing: false,
+            playingMuted: false
+        }
+        updateStatesForDocument(states, document);
+        if (states.playing) {
+            setIconForTab(tab, STATE_PLAYING);
+        } else if (states.playingMuted) {
+            setIconForTab(tab, STATE_PLAYING_MUTED);
+        } else if (hasTabIcon(tab)) {
+            setIconForTab(tab, STATE_NOT_PLAYING);
+        }
     }
 }
 

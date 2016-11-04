@@ -187,6 +187,7 @@ function addMediaElementEventListeners(window) {
     window.addEventListener("volumechange", onMediaElementEvent, true);
     window.addEventListener("pause", onMediaElementEvent, true);
     window.addEventListener("emptied", onMediaElementEvent, true);
+    window.addEventListener("loadeddata", onMediaElementEvent, true);
 }
 
 function removeMediaElementEventListeners(window) {
@@ -194,6 +195,7 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("volumechange", onMediaElementEvent, true);
     window.removeEventListener("pause", onMediaElementEvent, true);
     window.removeEventListener("emptied", onMediaElementEvent, true);
+    window.removeEventListener("loadeddata", onMediaElementEvent, true);
 }
 
 function mutationEventListener(tab) {    

@@ -212,20 +212,22 @@ function mutationEventListener(tab) {
 }
 
 function plugIntoDocument(document, tab) {
-    if (document && document.body && !document.entObserver) {
+    if (tab && document && document.body && !document.entObserver) {
         let window = document.defaultView;
-        addMediaElementEventListeners(window);
-        let documentMutationEventListener = new mutationEventListener(tab);
-        document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
-        document.entObserver.observe(document.body, {childList: true, subtree: true});
-        let frames = document.getElementsByTagName("iframe");
-        for (let frame of frames) {
-            let frameWindow = frame.contentWindow;
-            if (frameWindow != frameWindow.top) {
-                plugIntoDocument(frameWindow.document, tab);
+        if (window) {
+            addMediaElementEventListeners(window);
+            let documentMutationEventListener = new mutationEventListener(tab);
+            document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
+            document.entObserver.observe(document.body, {childList: true, subtree: true});
+            let frames = document.getElementsByTagName("iframe");
+            for (let frame of frames) {
+                let frameWindow = frame.contentWindow;
+                if (frameWindow != frameWindow.top) {
+                    plugIntoDocument(frameWindow.document, tab);
+                }
             }
+            return true;
         }
-        return true;
     }
     return false;
 }

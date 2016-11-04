@@ -202,18 +202,18 @@ function onMediaElementEmptied(event) {
     updateIconForTab(tab);
 }
 
-function addMediaElementEventListeners(mediaElement) {
-    mediaElement.addEventListener("playing", onMediaElementPlaying);
-    mediaElement.addEventListener("volumechange", onMediaElementVolumeChange);
-    mediaElement.addEventListener("pause", onMediaElementPause);
-    mediaElement.addEventListener("emptied", onMediaElementEmptied);
+function addMediaElementEventListeners(window) {
+    window.addEventListener("playing", onMediaElementPlaying, true);
+    window.addEventListener("volumechange", onMediaElementVolumeChange, true);
+    window.addEventListener("pause", onMediaElementPause, true);
+    window.addEventListener("emptied", onMediaElementEmptied, true);
 }
 
-function removeMediaElementEventListeners(mediaElement) {
-    mediaElement.removeEventListener("playing", onMediaElementPlaying);
-    mediaElement.removeEventListener("volumechange", onMediaElementVolumeChange);
-    mediaElement.removeEventListener("pause", onMediaElementPause);
-    mediaElement.removeEventListener("emptied", onMediaElementEmptied);
+function removeMediaElementEventListeners(window) {
+    window.removeEventListener("playing", onMediaElementPlaying, true);
+    window.removeEventListener("volumechange", onMediaElementVolumeChange, true);
+    window.removeEventListener("pause", onMediaElementPause, true);
+    window.removeEventListener("emptied", onMediaElementEmptied, true);
 }
 
 function mutationEventListener(tab) {
@@ -254,11 +254,8 @@ function mutationEventListener(tab) {
 
 function plugIntoDocument(document, tab) {
     if (document && document.body && !document.entMediaElementsObserver) {
-        let mediaElements = getMediaElementsFromDocument(document);
-        for (let mediaElement of mediaElements) {
-            addMediaElementEventListeners(mediaElement);
-        }
         let window = document.defaultView;
+        addMediaElementEventListeners(window);
         let documentMutationEventListener = new mutationEventListener(tab);
         document["entMediaElementsObserver"] = new window.MutationObserver(documentMutationEventListener.onMediaElementsMutation);
         document.entMediaElementsObserver.observe(document.body, {childList: true, subtree: true});
@@ -278,10 +275,8 @@ function plugIntoDocument(document, tab) {
 
 function unplugFromDocument(document) {
     if (document.body && document.entMediaElementsObserver) {
-        let mediaElements = getMediaElementsFromDocument(document);
-        for (let mediaElement of mediaElements) {
-            removeMediaElementEventListeners(mediaElement);
-        }
+        let window = document.defaultView;
+        removeMediaElementEventListeners(window);
         if (document.entMediaElementsObserver && document.entFramesObserver) {
             document.entMediaElementsObserver.disconnect();
             document.entMediaElementsObserver = undefined;

@@ -72,8 +72,8 @@ function clearIconFromTab(tab) {
     let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
     if (entIcon) {
         entIcon.parentNode.removeChild(entIcon);
+        tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
     }
-    tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
 };
 
 function setIconForTab(tab, state) {

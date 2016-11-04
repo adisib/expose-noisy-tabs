@@ -216,51 +216,28 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("emptied", onMediaElementEmptied, true);
 }
 
-function mutationEventListener(tab) {
-    this.onFramesMutation = function(mutations) {
-        mutations.forEach(function(mutation) {
-            for (let removedNode of mutation.removedNodes) {
-                if (removedNode.tagName == "IFRAME") {
-                    if (removedNode.contentWindow) {
-                        updateIconForTab(tab);
-                        break;
-                    }
-                }
-            }
-        });
-    };
-    
-    this.onMediaElementsMutation = function(mutations) {
+function mutationEventListener(tab) {    
+    this.onMutations = function(mutations) {
         let messedWithMediaElements = false;
         mutations.forEach(function(mutation) {
-            for (let addedNode of mutation.addedNodes) {
-                if (addedNode.tagName == "VIDEO" || addedNode.tagName == "AUDIO") {
-                    addMediaElementEventListeners(addedNode);
-                    messedWithMediaElements = true;
-                }
-            }
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode.tagName == "VIDEO" || removedNode.tagName == "AUDIO") {
-                    messedWithMediaElements = true;
+                if (removedNode.tagName == "VIDEO" || removedNode.tagName == "AUDIO" ||
+                    removedNode.tagName == "IFRAME") {
+                    updateIconForTab(tab);
                     break;
                 }
             }
         });
-        if (messedWithMediaElements) {
-            updateIconForTab(tab);
-        }
     };
 }
 
 function plugIntoDocument(document, tab) {
-    if (document && document.body && !document.entMediaElementsObserver) {
+    if (document && document.body && !document.entObserver) {
         let window = document.defaultView;
         addMediaElementEventListeners(window);
         let documentMutationEventListener = new mutationEventListener(tab);
-        document["entMediaElementsObserver"] = new window.MutationObserver(documentMutationEventListener.onMediaElementsMutation);
-        document.entMediaElementsObserver.observe(document.body, {childList: true, subtree: true});
-        document["entFramesObserver"] = new window.MutationObserver(documentMutationEventListener.onFramesMutation);
-        document.entFramesObserver.observe(document.body, {childList: true, subtree: true});
+        document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
+        document.entObserver.observe(document.body, {childList: true, subtree: true});
         let frames = document.getElementsByTagName("iframe");
         for (let frame of frames) {
             let frameWindow = frame.contentWindow;
@@ -274,15 +251,11 @@ function plugIntoDocument(document, tab) {
 }
 
 function unplugFromDocument(document) {
-    if (document.body && document.entMediaElementsObserver) {
+    if (document && document.body && document.entObserver) {
         let window = document.defaultView;
         removeMediaElementEventListeners(window);
-        if (document.entMediaElementsObserver && document.entFramesObserver) {
-            document.entMediaElementsObserver.disconnect();
-            document.entMediaElementsObserver = undefined;
-            document.entFramesObserver.disconnect();
-            document.entFramesObserver = undefined;
-        }
+        document.entObserver.disconnect();
+        document.entObserver = undefined;
         let frames = document.getElementsByTagName("iframe");
         for (let frame of frames) {
             let frameWindow = frame.contentWindow;

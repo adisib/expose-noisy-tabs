@@ -174,28 +174,7 @@ function toggleMediaElementsMute(tab) {
     }
 }
 
-function onMediaElementPlaying(event) {
-    let mediaElement = event.target;
-    let document = mediaElement.ownerDocument;
-    let tab = findTabForDocument(document);
-    updateIconForTab(tab);
-}
-
-function onMediaElementVolumeChange(event) {
-    let mediaElement = event.target;
-    let document = mediaElement.ownerDocument;
-    let tab = findTabForDocument(document);
-    updateIconForTab(tab);
-}
-
-function onMediaElementPause(event) {
-    let mediaElement = event.target;
-    let document = mediaElement.ownerDocument;
-    let tab = findTabForDocument(document);
-    updateIconForTab(tab);
-}
-
-function onMediaElementEmptied(event) {
+function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
@@ -203,17 +182,17 @@ function onMediaElementEmptied(event) {
 }
 
 function addMediaElementEventListeners(window) {
-    window.addEventListener("playing", onMediaElementPlaying, true);
-    window.addEventListener("volumechange", onMediaElementVolumeChange, true);
-    window.addEventListener("pause", onMediaElementPause, true);
-    window.addEventListener("emptied", onMediaElementEmptied, true);
+    window.addEventListener("playing", onMediaElementEvent, true);
+    window.addEventListener("volumechange", onMediaElementEvent, true);
+    window.addEventListener("pause", onMediaElementEvent, true);
+    window.addEventListener("emptied", onMediaElementEvent, true);
 }
 
 function removeMediaElementEventListeners(window) {
-    window.removeEventListener("playing", onMediaElementPlaying, true);
-    window.removeEventListener("volumechange", onMediaElementVolumeChange, true);
-    window.removeEventListener("pause", onMediaElementPause, true);
-    window.removeEventListener("emptied", onMediaElementEmptied, true);
+    window.removeEventListener("playing", onMediaElementEvent, true);
+    window.removeEventListener("volumechange", onMediaElementEvent, true);
+    window.removeEventListener("pause", onMediaElementEvent, true);
+    window.removeEventListener("emptied", onMediaElementEvent, true);
 }
 
 function mutationEventListener(tab) {    

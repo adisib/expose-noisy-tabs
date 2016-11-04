@@ -9,6 +9,7 @@ const STATE_PLAYING_MUTED = 2;
 const STATE_NOT_PLAYING = 3;
 
 const ENT_ICON_CLASS = "entIcon";
+const ENT_NOISY_ATTRIBUTE = "entNoisy";
 
 const NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon.png";
 const NOT_NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon_muted.png";
@@ -72,7 +73,7 @@ function clearIconFromTab(tab) {
     if (entIcon) {
         entIcon.parentNode.removeChild(entIcon);
     }
-    tab.removeAttribute("noisy");
+    tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
 };
 
 function setIconForTab(tab, state) {
@@ -82,13 +83,13 @@ function setIconForTab(tab, state) {
         if (state == STATE_PLAYING) {
             entIcon.src = NOISY_ICON_SRC;
             entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
-            tab.setAttribute("noisy", true);
+            tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
         } else if (state == STATE_PLAYING_MUTED) {
             entIcon.src = NOT_NOISY_ICON_SRC;
             entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
-            tab.setAttribute("noisy", false);
+            tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
         } else {
-            tab.removeAttribute("noisy");
+            tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
             entIcon.src = null;
         }
     }
@@ -166,8 +167,8 @@ function toggleMuteMediaElementsInDocument(document, mute) {
 }
 
 function toggleMediaElementsMute(tab) {
-    if (tab.getAttribute("noisy") != null) {
-        let mute = (tab.getAttribute("noisy") == "true");
+    if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) != null) {
+        let mute = (tab.getAttribute(ENT_NOISY_ATTRIBUTE) == "true");
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
         toggleMuteMediaElementsInDocument(document, mute);

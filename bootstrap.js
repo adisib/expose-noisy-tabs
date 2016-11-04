@@ -235,14 +235,16 @@ function plugIntoDocument(document, tab) {
 function unplugFromDocument(document) {
     if (document && document.body && document.entObserver) {
         let window = document.defaultView;
-        removeMediaElementEventListeners(window);
-        document.entObserver.disconnect();
-        document.entObserver = undefined;
-        let frames = document.getElementsByTagName("iframe");
-        for (let frame of frames) {
-            let frameWindow = frame.contentWindow;
-            if (frameWindow != frameWindow.top) {
-                unplugFromDocument(frameWindow.document);
+        if (window) {
+            removeMediaElementEventListeners(window);
+            document.entObserver.disconnect();
+            document.entObserver = undefined;
+            let frames = document.getElementsByTagName("iframe");
+            for (let frame of frames) {
+                let frameWindow = frame.contentWindow;
+                if (frameWindow != frameWindow.top) {
+                    unplugFromDocument(frameWindow.document);
+                }
             }
         }
     }

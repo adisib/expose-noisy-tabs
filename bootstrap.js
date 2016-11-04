@@ -270,6 +270,14 @@ function onDocumentLoad(event) {
     }, 1000);
 }
 
+function onPageHide(event) {
+    let document = event.target;
+    let tab = findTabForDocument(document);
+    setTimeout(function() {
+        updateIconForTab(tab);
+    }, 100);
+}
+
 function onTabMove(event) {
     let tab = event.target;
     updateIconForTab(tab);
@@ -288,6 +296,7 @@ function initTabsForWindow(window) {
         plugIntoTab(tab);
     }
     tabBrowser.addEventListener("load", onDocumentLoad, true);
+    tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
 }
@@ -298,6 +307,7 @@ function clearTabsForWindow(window) {
         unplugFromTab(tab);
     }
     tabBrowser.removeEventListener("load", onDocumentLoad, true);
+    tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
 }

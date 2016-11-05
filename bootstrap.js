@@ -175,6 +175,14 @@ function toggleMediaElementsMute(tab) {
     }
 }
 
+function onKeyUp(event) {
+    if (event.ctrlKey && event.keyCode == 77) { // ctrl + m
+        let document = event.view.document;
+        let tab = findTabForDocument(document);
+        toggleMediaElementsMute(tab);
+    }
+}
+
 function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
@@ -252,11 +260,28 @@ function unplugFromDocument(document) {
     }
 }
 
+function addHotkeyEventListener(tab) {
+    if (tab) {
+        let browser = tab.linkedBrowser;
+        let document = browser.contentDocument;
+        document.addEventListener("keyup", onKeyUp, false);
+    }
+}
+
+function removeHotkeyEventListener(tab) {
+    if (tab) {
+        let browser = tab.linkedBrowser;
+        let document = browser.contentDocument;
+        document.removeEventListener("keyup", onKeyUp, false);
+    }
+}
+
 function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     if (plugIntoDocument(document, tab)) {
         updateIconForTab(tab);
+        addHotkeyEventListener(tab);
     }
 }
 
@@ -264,6 +289,7 @@ function unplugFromTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     unplugFromDocument(document);
+    removeHotkeyEventListener(tab);
     clearIconFromTab(tab);
 }
 
@@ -285,6 +311,16 @@ function onPageHide(event) {
     }, 100);
 }
 
+function onTabOpen(event) {
+    let tab = event.target;
+    addHotkeyEventListener(tab);
+}
+
+function onTabClose(event) {
+    let tab = event.target;
+    removeHotkeyEventListener(tab);
+}
+
 function onTabMove(event) {
     let tab = event.target;
     updateIconForTab(tab);
@@ -304,6 +340,8 @@ function initTabsForWindow(window) {
     }
     tabBrowser.addEventListener("load", onDocumentLoad, true);
     tabBrowser.addEventListener("pagehide", onPageHide, true);
+    tabBrowser.tabContainer.addEventListener("TabOpen", onTabOpen, false);
+    tabBrowser.tabContainer.addEventListener("TabClose", onTabClose, false);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
 }
@@ -315,6 +353,8 @@ function clearTabsForWindow(window) {
     }
     tabBrowser.removeEventListener("load", onDocumentLoad, true);
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
+    tabBrowser.tabContainer.removeEventListener("TabOpen", onTabOpen, false);
+    tabBrowser.tabContainer.removeEventListener("TabClose", onTabClose, false);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
 }

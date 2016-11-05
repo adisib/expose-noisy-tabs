@@ -208,7 +208,6 @@ function removeMediaElementEventListeners(window) {
 
 function mutationEventListener(tab) {    
     this.onMutations = function(mutations) {
-        let messedWithMediaElements = false;
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
                 if (removedNode.tagName == "VIDEO" || removedNode.tagName == "AUDIO" ||

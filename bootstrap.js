@@ -229,6 +229,7 @@ function plugIntoDocument(document, tab) {
             let documentMutationEventListener = new mutationEventListener(tab);
             document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
             document.entObserver.observe(document.body, {childList: true, subtree: true});
+            addHotkeyEventListener(tab);
             let frames = document.getElementsByTagName("iframe");
             for (let frame of frames) {
                 let frameWindow = frame.contentWindow;
@@ -249,6 +250,8 @@ function unplugFromDocument(document) {
             removeMediaElementEventListeners(window);
             document.entObserver.disconnect();
             document.entObserver = undefined;
+            let tab = findTabForDocument(document);
+            removeHotkeyEventListener(tab);
             let frames = document.getElementsByTagName("iframe");
             for (let frame of frames) {
                 let frameWindow = frame.contentWindow;
@@ -311,16 +314,6 @@ function onPageHide(event) {
     }, 100);
 }
 
-function onTabOpen(event) {
-    let tab = event.target;
-    addHotkeyEventListener(tab);
-}
-
-function onTabClose(event) {
-    let tab = event.target;
-    removeHotkeyEventListener(tab);
-}
-
 function onTabMove(event) {
     let tab = event.target;
     updateIconForTab(tab);
@@ -340,8 +333,6 @@ function initTabsForWindow(window) {
     }
     tabBrowser.addEventListener("load", onDocumentLoad, true);
     tabBrowser.addEventListener("pagehide", onPageHide, true);
-    tabBrowser.tabContainer.addEventListener("TabOpen", onTabOpen, false);
-    tabBrowser.tabContainer.addEventListener("TabClose", onTabClose, false);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
 }
@@ -353,8 +344,6 @@ function clearTabsForWindow(window) {
     }
     tabBrowser.removeEventListener("load", onDocumentLoad, true);
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
-    tabBrowser.tabContainer.removeEventListener("TabOpen", onTabOpen, false);
-    tabBrowser.tabContainer.removeEventListener("TabClose", onTabClose, false);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
 }

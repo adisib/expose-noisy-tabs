@@ -101,7 +101,7 @@ function updateStatesForDocument(states, document) {
     let hasAnyNonMutedMediaElements = false;
     for (mediaElement of mediaElements) {
         if (mediaElement.mozHasAudio !== false) {
-            if (!mediaElement.paused) {
+            if (!mediaElement.paused && mediaElement.seeking !== true) {
                 hasAnyNonPausedMediaElements = true;
                 if (!mediaElement.muted) {
                     hasAnyNonMutedMediaElements = true;
@@ -196,6 +196,7 @@ function addMediaElementEventListeners(window) {
     window.addEventListener("pause", onMediaElementEvent, true);
     window.addEventListener("emptied", onMediaElementEvent, true);
     window.addEventListener("loadeddata", onMediaElementEvent, true);
+    window.addEventListener("seeking", onMediaElementEvent, true);
 }
 
 function removeMediaElementEventListeners(window) {
@@ -204,6 +205,7 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("pause", onMediaElementEvent, true);
     window.removeEventListener("emptied", onMediaElementEvent, true);
     window.removeEventListener("loadeddata", onMediaElementEvent, true);
+    window.removeEventListener("seeking", onMediaElementEvent, true);
 }
 
 function mutationEventListener(tab) {    

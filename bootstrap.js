@@ -302,7 +302,7 @@ function onDocumentLoad(event) {
         if (plugIntoDocument(document, tab)) {
             updateIconForTab(tab);
         }
-    }, 1000);
+    }, 100);
 }
 
 function onPageHide(event) {

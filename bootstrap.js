@@ -221,7 +221,10 @@ function mutationEventListener(tab) {
 }
 
 function plugIntoDocument(document, tab) {
-    if (tab && document && document.body && !document.entObserver) {
+    if (Components.utils.isDeadWrapper(document) || Components.utils.isDeadWrapper(tab)) {
+        return false;
+    }
+    if (document.body && !document.entObserver) {
         let window = document.defaultView;
         if (window) {
             addMediaElementEventListeners(window);

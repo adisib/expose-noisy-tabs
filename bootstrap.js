@@ -13,7 +13,7 @@ const ENT_NOISY_ATTRIBUTE = "entNoisy";
 
 const NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon.png";
 const NOT_NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon_muted.png";
-    
+
 const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
@@ -208,7 +208,7 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("seeking", onMediaElementEvent, true);
 }
 
-function mutationEventListener(tab) {    
+function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
@@ -226,24 +226,47 @@ function plugIntoDocument(document, tab) {
     if (Components.utils.isDeadWrapper(document) || Components.utils.isDeadWrapper(tab)) {
         return false;
     }
+
     if (document.body && !document.entObserver) {
         let window = document.defaultView;
         if (window) {
             addMediaElementEventListeners(window);
+
             let documentMutationEventListener = new mutationEventListener(tab);
             document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
             document.entObserver.observe(document.body, {childList: true, subtree: true});
             addHotkeyEventListener(tab);
-            let frames = document.getElementsByTagName("iframe");
-            for (let frame of frames) {
-                let frameWindow = frame.contentWindow;
-                if (frameWindow != frameWindow.top) {
-                    plugIntoDocument(frameWindow.document, tab);
-                }
-            }
+
+            // Bad hack to attach detached media nodes so we can see them
+            let overwriteFunc = `
+                (function(){
+                var elementConstructor = document.createElement;
+                document.createElement = function (name) {
+                    var el = elementConstructor.apply(document, arguments);
+
+                    if (el.tagName === "AUDIO" || el.tagName === "VIDEO")
+                    {
+                        window.setTimeout(function(){
+                            if (!el.parentNode)
+                            {
+                                document.body.appendChild(el);
+                            }
+                        }, 500);
+                    }
+
+                    return el;
+                };
+                })();
+            `;
+            let scriptInject = document.createElement('script');
+            scriptInject.language = "javascript";
+            scriptInject.innerHTML = overwriteFunc;
+            document.body.appendChild(scriptInject);
+
             return true;
         }
     }
+
     return false;
 }
 
@@ -343,7 +366,7 @@ function initTabsForWindow(window) {
 
 function clearTabsForWindow(window) {
     let tabBrowser = window.gBrowser;
-    for (let tab of tabBrowser.tabs) {            
+    for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
     tabBrowser.removeEventListener("load", onDocumentLoad, true);
@@ -355,7 +378,7 @@ function clearTabsForWindow(window) {
 let windowListener = {
     onOpenWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                              .getInterface(Components.interfaces.nsIDOMWindow);    
+                              .getInterface(Components.interfaces.nsIDOMWindow);
         window.addEventListener("load", function() {
             window.removeEventListener("load", arguments.callee, false);
             if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
@@ -363,10 +386,10 @@ let windowListener = {
             }
         });
     },
-    
+
     onCloseWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                              .getInterface(Components.interfaces.nsIDOMWindow);    
+                              .getInterface(Components.interfaces.nsIDOMWindow);
         if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
             clearTabsForWindow(window);
         }

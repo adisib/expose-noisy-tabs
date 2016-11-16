@@ -99,7 +99,7 @@ function updateStatesForDocument(states, document) {
     let mediaElements = getMediaElementsFromDocument(document);
     let hasAnyNonPausedMediaElements = false;
     let hasAnyNonMutedMediaElements = false;
-    for (mediaElement of mediaElements) {
+    for (let mediaElement of mediaElements) {
         if (mediaElement.mozHasAudio !== false) {
             if (!mediaElement.paused && mediaElement.seeking !== true) {
                 hasAnyNonPausedMediaElements = true;

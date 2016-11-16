@@ -74,7 +74,7 @@ function clearIconFromTab(tab) {
         entIcon.parentNode.removeChild(entIcon);
         tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
     }
-};
+}
 
 function setIconForTab(tab, state) {
     if (hasTabIcon(tab) || createIconForTab(tab)) {
@@ -133,7 +133,7 @@ function updateIconForTab(tab) {
         let states = {
             playing: false,
             playingMuted: false
-        }
+        };
         updateStatesForDocument(states, document);
         if (states.playing) {
             setIconForTab(tab, STATE_PLAYING);
@@ -274,10 +274,12 @@ function unplugFromDocument(document) {
         let window = document.defaultView;
         if (window) {
             removeMediaElementEventListeners(window);
+
             document.entObserver.disconnect();
             document.entObserver = undefined;
             let tab = findTabForDocument(document);
             removeHotkeyEventListener(tab);
+
             let frameElements = document.getElementsByTagName("iframe");
             for (let frameElement of frameElements) {
                 let frameWindow = frameElement.contentWindow;

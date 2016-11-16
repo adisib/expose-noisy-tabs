@@ -208,6 +208,31 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("seeking", onMediaElementEvent, true);
 }
 
+function enableMediaNodeForceAttach(document) {
+    let overwriteFunc = `
+        (function(){
+        var elementConstructor = document.createElement;
+        document.createElement = function (name) {
+            var el = elementConstructor.apply(document, arguments);
+
+            if (el.tagName === "AUDIO" || el.tagName === "VIDEO") {
+                window.setTimeout(function() {
+                    if (!el.parentNode) {
+                        document.body.appendChild(el);
+                    }
+                }, 500);
+            }
+
+            return el;
+        };
+        })();
+    `;
+    let scriptInject = document.createElement('script');
+    scriptInject.language = "javascript";
+    scriptInject.innerHTML = overwriteFunc;
+    document.body.appendChild(scriptInject);
+}
+
 function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
@@ -237,36 +262,10 @@ function plugIntoDocument(document, tab) {
             document.entObserver.observe(document.body, {childList: true, subtree: true});
             addHotkeyEventListener(tab);
 
-            // Bad hack to attach detached media nodes so we can see them
-            let overwriteFunc = `
-                (function(){
-                var elementConstructor = document.createElement;
-                document.createElement = function (name) {
-                    var el = elementConstructor.apply(document, arguments);
-
-                    if (el.tagName === "AUDIO" || el.tagName === "VIDEO")
-                    {
-                        window.setTimeout(function(){
-                            if (!el.parentNode)
-                            {
-                                document.body.appendChild(el);
-                            }
-                        }, 500);
-                    }
-
-                    return el;
-                };
-                })();
-            `;
-            let scriptInject = document.createElement('script');
-            scriptInject.language = "javascript";
-            scriptInject.innerHTML = overwriteFunc;
-            document.body.appendChild(scriptInject);
-
+            enableMediaNodeForceAttach(document);
             return true;
         }
     }
-
     return false;
 }
 

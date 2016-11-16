@@ -74,7 +74,7 @@ function clearIconFromTab(tab) {
         entIcon.parentNode.removeChild(entIcon);
         tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
     }
-};
+}
 
 function setIconForTab(tab, state) {
     if (hasTabIcon(tab) || createIconForTab(tab)) {
@@ -99,7 +99,7 @@ function updateStatesForDocument(states, document) {
     let mediaElements = getMediaElementsFromDocument(document);
     let hasAnyNonPausedMediaElements = false;
     let hasAnyNonMutedMediaElements = false;
-    for (mediaElement of mediaElements) {
+    for (let mediaElement of mediaElements) {
         if (mediaElement.mozHasAudio !== false) {
             if (!mediaElement.paused && mediaElement.seeking !== true) {
                 hasAnyNonPausedMediaElements = true;
@@ -117,9 +117,9 @@ function updateStatesForDocument(states, document) {
             states.playingMuted = true;
         }
     }
-    let frames = document.getElementsByTagName("iframe");
-    for (let frame of frames) {
-        let frameWindow = frame.contentWindow;
+    let frameElements = document.getElementsByTagName("iframe");
+    for (let frameElement of frameElements) {
+        let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
             updateStatesForDocument(states, frameWindow.document);
         }
@@ -133,7 +133,7 @@ function updateIconForTab(tab) {
         let states = {
             playing: false,
             playingMuted: false
-        }
+        };
         updateStatesForDocument(states, document);
         if (states.playing) {
             setIconForTab(tab, STATE_PLAYING);
@@ -157,9 +157,9 @@ function toggleMuteMediaElementsInDocument(document, mute) {
     for (let mediaElement of mediaElements) {
         mediaElement.muted = mute;
     }
-    let frames = document.getElementsByTagName("iframe");
-    for (let frame of frames) {
-        let frameWindow = frame.contentWindow;
+    let frameElements = document.getElementsByTagName("iframe");
+    for (let frameElement of frameElements) {
+        let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
             toggleMuteMediaElementsInDocument(frameWindow.document, mute);
         }
@@ -274,13 +274,15 @@ function unplugFromDocument(document) {
         let window = document.defaultView;
         if (window) {
             removeMediaElementEventListeners(window);
+
             document.entObserver.disconnect();
             document.entObserver = undefined;
             let tab = findTabForDocument(document);
             removeHotkeyEventListener(tab);
-            let frames = document.getElementsByTagName("iframe");
-            for (let frame of frames) {
-                let frameWindow = frame.contentWindow;
+
+            let frameElements = document.getElementsByTagName("iframe");
+            for (let frameElement of frameElements) {
+                let frameWindow = frameElement.contentWindow;
                 if (frameWindow != frameWindow.top) {
                     unplugFromDocument(frameWindow.document);
                 }

@@ -269,6 +269,16 @@ function plugIntoDocument(document, tab) {
     return false;
 }
 
+function plugIntoDocumentFrames(document, tab) {
+    let frameElements = document.getElementsByTagName("iframe");
+    for (let frameElement of frameElements) {
+        let frameWindow = frameElement.contentWindow;
+        if (frameWindow != frameWindow.top) {
+            plugIntoDocument(frameWindow.document, tab);
+        }
+    }
+}
+
 function unplugFromDocument(document) {
     if (document && document.body && document.entObserver) {
         let window = document.defaultView;
@@ -311,6 +321,7 @@ function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
     if (plugIntoDocument(document, tab)) {
+        plugIntoDocumentFrames(document, tab);
         updateIconForTab(tab);
         addHotkeyEventListener(tab);
     }

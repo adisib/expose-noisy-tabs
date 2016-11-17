@@ -37,6 +37,9 @@
           <hbox flex="0" align="center">
             <checkbox id="enableKeyboardShortcut" label="Enable Ctrl+M keyboard shortcut for muting/unmuting active tab"/>
           </hbox>
+          <hbox flex="0" align="center">
+            <checkbox id="preventAutoBackgroundPlayback" label="Prevent automatic media playback for background tabs"/>
+          </hbox>
         </vbox>
       </tabpanel>
     </tabpanels>

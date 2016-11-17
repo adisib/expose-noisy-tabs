@@ -377,7 +377,7 @@ function initTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         plugIntoTab(tab);
     }
-    tabBrowser.addEventListener("load", onDocumentLoad, true);
+    tabBrowser.addEventListener("DOMContentLoaded", onDocumentLoad, true);
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
@@ -388,7 +388,7 @@ function clearTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
-    tabBrowser.removeEventListener("load", onDocumentLoad, true);
+    tabBrowser.removeEventListener("DOMContentLoaded", onDocumentLoad, true);
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);

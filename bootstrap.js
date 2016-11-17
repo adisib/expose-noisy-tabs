@@ -345,11 +345,9 @@ function unplugFromTab(tab) {
 function onDocumentLoad(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
-    setTimeout(function() {
-        if (plugIntoDocument(document, tab)) {
-            updateIconForTab(tab);
-        }
-    }, 100);
+    if (plugIntoDocument(document, tab)) {
+        updateIconForTab(tab);
+    }
 }
 
 function onPageHide(event) {

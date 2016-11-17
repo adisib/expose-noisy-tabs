@@ -19,7 +19,8 @@ const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
 let Prefs = null;
 const DEFAULT_PREFS = {
-    enableKeyboardShortcut: true
+    enableKeyboardShortcut: true,
+    preventAutoBackgroundPlayback: false
 };
 
 function findTabForDocument(document) {
@@ -194,7 +195,12 @@ function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    updateIconForTab(tab);
+    if (event.type === "playing" && !tab.selected &&
+        Prefs.getValue("preventAutoBackgroundPlayback")) {
+        mediaElement.pause();
+    } else {
+        updateIconForTab(tab);
+    }
 }
 
 function addMediaElementEventListeners(window) {
@@ -346,7 +352,14 @@ function onDocumentLoad(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
     if (plugIntoDocument(document, tab)) {
-        updateIconForTab(tab);
+        if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
+            let mediaElements = getMediaElementsFromDocument(document);
+            for (let mediaElement of mediaElements) {
+                mediaElement.pause();
+            }
+        } else {
+            updateIconForTab(tab);
+        }
     }
 }
 

@@ -348,15 +348,26 @@ function unplugFromTab(tab) {
     clearIconFromTab(tab);
 }
 
+function pauseAllMediaElementsInDocument(document) {
+    let mediaElements = getMediaElementsFromDocument(document);
+    for (let mediaElement of mediaElements) {
+        mediaElement.pause();
+    }
+    let frameElements = document.getElementsByTagName("iframe");
+    for (let frameElement of frameElements) {
+        let frameWindow = frameElement.contentWindow;
+        if (frameWindow != frameWindow.top) {
+            pauseAllMediaElementsInDocument(frameWindow.document);
+        }
+    }
+}
+
 function onDocumentLoad(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
     if (plugIntoDocument(document, tab)) {
         if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
-            let mediaElements = getMediaElementsFromDocument(document);
-            for (let mediaElement of mediaElements) {
-                mediaElement.pause();
-            }
+            pauseAllMediaElementsInDocument(document);
         } else {
             updateIconForTab(tab);
         }

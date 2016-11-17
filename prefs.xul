@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        id="entPrefs"
+        title="Expose Noisy Tabs preferences" 
+        style="min-width: 400px; min-height: 100px;"
+        windowtype="entPrefsWindow">
+  
+  <script type="application/x-javascript">
+    <![CDATA[
+      Components.utils.import("resource://gre/modules/Services.jsm");
+    
+      function onWindowLoad() {
+          Services.obs.notifyObservers(window, "entPrefsOpen", null);
+      }
+    
+      function onReset() {
+          Services.obs.notifyObservers(window, "entPrefsReset", null);
+      } 
+    
+      function onApply() {
+          Services.obs.notifyObservers(window, "entPrefsApply", null);
+      }
+      
+      window.onload = onWindowLoad;
+    ]]>
+  </script>
+  
+  <tabbox id="tabbox" flex="1" style="padding: 5px">
+    <tabs>
+      <tab id="generalTab" label="General"/>
+    </tabs>
+    <tabpanels flex="1">
+      <tabpanel id="generalTabpanel">
+        <vbox flex="1">
+          <hbox flex="0" align="center">
+            <checkbox id="enableKeyboardShortcut" label="Enable Ctrl+M keyboard shortcut for muting/unmuting active tab"/>
+          </hbox>
+        </vbox>
+      </tabpanel>
+    </tabpanels>
+  </tabbox>
+  
+  <hbox style="padding: 0px 0px 5px 0px">
+    <button label="Reset values to default" oncommand="onReset();"/>
+    <spacer flex="1"/>
+    <button label="Apply changes" oncommand="onApply();"/>
+    <button label="Close" onclick="window.close();"/>
+  </hbox>
+</window>

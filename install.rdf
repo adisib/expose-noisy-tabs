@@ -9,6 +9,7 @@
     <em:version>0.4.0</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
+    <em:optionsURL>chrome://expose-noisy-tabs/content/prefs.xul</em:optionsURL>
     <em:iconURL>chrome://expose-noisy-tabs/content/icon.png</em:iconURL>
     
     <!-- Pale Moon -->

@@ -17,6 +17,11 @@ const NOT_NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon_muted.png
 const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
+let Prefs = null;
+const DEFAULT_PREFS = {
+    enableKeyboardShortcut: true
+};
+
 function findTabForDocument(document) {
     let documentWindow = document.defaultView.top;
     let windowsEnumerator = Services.wm.getEnumerator("navigator:browser");
@@ -176,10 +181,12 @@ function toggleMediaElementsMute(tab) {
 }
 
 function onKeyUp(event) {
-    if (event.ctrlKey && event.keyCode == 77) { // ctrl + m
-        let document = event.view.document;
-        let tab = findTabForDocument(document);
-        toggleMediaElementsMute(tab);
+    if (Prefs.getValue("enableKeyboardShortcut")) {
+        if (event.ctrlKey && event.keyCode == 77) { // ctrl + m
+            let document = event.view.document;
+            let tab = findTabForDocument(document);
+            toggleMediaElementsMute(tab);
+        }
     }
 }
 
@@ -427,10 +434,20 @@ function clearWindows() {
 }
 
 function startup(data, reason) {
+    let Imports = {};
+    Components.utils.import("chrome://" + EXT_NAME + "/content/prefs.js", Imports);
+    Prefs = new Imports.Prefs(DEFAULT_PREFS, EXT_NAME);
+    Services.obs.addObserver(Prefs.onOpen, "entPrefsOpen", false);
+    Services.obs.addObserver(Prefs.onReset, "entPrefsReset", false);
+    Services.obs.addObserver(Prefs.onApply, "entPrefsApply", false);
+    Prefs.init();
     initWindows();
 }
 
 function shutdown(data, reason) {
+    Services.obs.removeObserver(Prefs.onOpen, "entPrefsOpen");
+    Services.obs.removeObserver(Prefs.onReset, "entPrefsReset");
+    Services.obs.removeObserver(Prefs.onApply, "entPrefsApply");
     clearWindows();
 }
 

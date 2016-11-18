@@ -4,7 +4,7 @@
         xmlns:html="http://www.w3.org/1999/xhtml"
         id="entPrefs"
         title="Expose Noisy Tabs preferences" 
-        style="min-width: 400px; min-height: 100px;"
+        style="min-width: 250px; min-height: 100px;"
         windowtype="entPrefsWindow">
   
   <script type="application/x-javascript">
@@ -28,38 +28,23 @@
   </script>
   
   <tabbox id="tabbox" flex="1" style="padding: 5px">
-    <tabs>
-      <tab id="generalTab" label="General"/>
-      <tab label="Appearance"/>
-    </tabs>
     <tabpanels flex="1">
-      <tabpanel id="generalTabpanel">
-        <vbox flex="1">
-          <hbox flex="0" align="center">
-            <checkbox id="enableKeyboardShortcut" label="Enable Ctrl+M keyboard shortcut for muting/unmuting active tab"/>
-          </hbox>
-          <hbox flex="0" align="center">
-            <checkbox id="preventAutoBackgroundPlayback" label="Prevent automatic media playback for background tabs"/>
-          </hbox>
-        </vbox>
-      </tabpanel>
-      
+    
       <tabpanel>
         <vbox flex="1">
+          
           <hbox flex="0" align="center">
             <label value="Tab icon size"/>
             <spacer flex="1"/>
-            <textbox id="iconSize" type="number" width="30" min="8" max="32"/>
-            <spacer flex="10"/>
+            <textbox id="iconSize" type="number" width="35" min="8" max="32"/>
           </hbox>
           
           <hbox flex="0" align="center">
             <label value="Tab icon opacity"/>
             <spacer flex="1"/>
-            <textbox id="iconOpacity" type="number" width="30" min="30" max="100"/>
-            <spacer flex="10"/>
+            <textbox id="iconOpacity" type="number" width="35" min="30" max="100"/>
           </hbox>
-        
+          
           <hbox flex="0" align="center">
             <label value="Tab icon theme"/>
             <spacer flex="1"/>
@@ -69,11 +54,21 @@
                 <menuitem value="2" label="light"/>
               </menupopup>
             </menulist>
-            <spacer flex="10"/>
           </hbox>
+          
+          <spacer flex="0" height="15"/>
+          
+          <hbox flex="0" align="center">
+            <checkbox id="enableKeyboardShortcut" label="Enable Ctrl+M keyboard shortcut for muting/unmuting active tab"/>
+          </hbox>
+          
+          <hbox flex="0" align="center">
+            <checkbox id="preventAutoBackgroundPlayback" label="Prevent automatic media playback for background tabs"/>
+          </hbox>
+          
         </vbox>
       </tabpanel>
-      
+
     </tabpanels>
   </tabbox>
   

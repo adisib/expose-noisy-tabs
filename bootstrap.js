@@ -11,14 +11,19 @@ const STATE_NOT_PLAYING = 3;
 const ENT_ICON_CLASS = "entIcon";
 const ENT_NOISY_ATTRIBUTE = "entNoisy";
 
-const NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon.png";
-const NOT_NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon_muted.png";
+const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/icon_themes/";
+const NOISY_ICON_NAME = "/noisy.png";
+const NOT_NOISY_ICON_NAME = "/not_noisy.png";
 
 const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
 let Prefs = null;
+let onPrefsApply = null;
 const DEFAULT_PREFS = {
+    iconSize: 16,
+    iconOpacity: 75,
+    iconTheme: 1,
     enableKeyboardShortcut: true,
     preventAutoBackgroundPlayback: false
 };
@@ -51,10 +56,10 @@ function createIconForTab(tab) {
     if (tabLabel) {
         let document = tab.ownerDocument;
         let icon = document.createElementNS(XUL_NS, "xul:image");
-        let normalOpacity = "0.75";
-        let hoverOpacity = "1.0";
         icon.className = ENT_ICON_CLASS;
-        icon.style.opacity = normalOpacity;
+        icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
+        icon.style.width = Prefs.getValue("iconSize") + "px";
+        icon.style.height = icon.style.width;
         icon.addEventListener("mousedown", function(event) {
             if (event.button == 0) {
                 toggleMediaElementsMute(tab);
@@ -62,10 +67,10 @@ function createIconForTab(tab) {
             }
         }, true);
         icon.onmouseover = function() {
-            icon.style.opacity = hoverOpacity;
+            icon.style.opacity = 1.0;
         };
         icon.onmouseout = function() {
-            icon.style.opacity = normalOpacity;
+            icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
         };
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
         return true;
@@ -87,11 +92,11 @@ function setIconForTab(tab, state) {
         let document = tab.ownerDocument;
         let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
         if (state == STATE_PLAYING) {
-            entIcon.src = NOISY_ICON_SRC;
+            entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
             entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
             tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
         } else if (state == STATE_PLAYING_MUTED) {
-            entIcon.src = NOT_NOISY_ICON_SRC;
+            entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
             entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
             tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
         } else {
@@ -461,7 +466,16 @@ function startup(data, reason) {
     Prefs = new Imports.Prefs(DEFAULT_PREFS, EXT_NAME);
     Services.obs.addObserver(Prefs.onOpen, "entPrefsOpen", false);
     Services.obs.addObserver(Prefs.onReset, "entPrefsReset", false);
-    Services.obs.addObserver(Prefs.onApply, "entPrefsApply", false);
+    
+    onPrefsApply = {
+        observe: function(aSubject, aTopic, aData) {
+            Prefs.onApply.observe(aSubject, aTopic, aData);
+            clearWindows();
+            initWindows();
+        }
+    };
+    
+    Services.obs.addObserver(onPrefsApply, "entPrefsApply", false);
     Prefs.init();
     initWindows();
 }
@@ -469,7 +483,7 @@ function startup(data, reason) {
 function shutdown(data, reason) {
     Services.obs.removeObserver(Prefs.onOpen, "entPrefsOpen");
     Services.obs.removeObserver(Prefs.onReset, "entPrefsReset");
-    Services.obs.removeObserver(Prefs.onApply, "entPrefsApply");
+    Services.obs.removeObserver(onPrefsApply, "entPrefsApply");
     clearWindows();
 }
 

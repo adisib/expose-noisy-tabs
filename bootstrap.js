@@ -200,7 +200,7 @@ function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    if (event.type === "playing" && !tab.selected &&
+    if (event.type === "loadeddata" && !tab.selected &&
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
     } else {

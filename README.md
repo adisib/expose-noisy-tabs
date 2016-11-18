@@ -1,5 +1,5 @@
 ## Expose Noisy Tabs
-This is an extension for Pale Moon web browser which exposes noisy tabs containing audio or video elements. It adds indicator icons for tabs when sounds are being played on their websites. 
+This is an extension for Pale Moon web browser which exposes noisy tabs containing audio or video elements. It simply adds indicator icons for tabs when sounds are being played on their websites, but has also possibility to mute them.
 
 Works only with HTML5 media elements. Flash is not supported yet.
 

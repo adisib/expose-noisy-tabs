@@ -332,13 +332,17 @@ function unplugFromDocument(document) {
             document.entObserver.disconnect();
             document.entObserver = undefined;
 
-            let frameElements = document.getElementsByTagName("iframe");
-            for (let frameElement of frameElements) {
-                let frameWindow = frameElement.contentWindow;
-                if (frameWindow != frameWindow.top) {
-                    unplugFromDocument(frameWindow.document);
-                }
-            }
+            unplugFromDocumentFrames(document);
+        }
+    }
+}
+
+function unplugFromDocumentFrames(document) {
+    let frameElements = document.getElementsByTagName("iframe");
+    for (let frameElement of frameElements) {
+        let frameWindow = frameElement.contentWindow;
+        if (frameWindow != frameWindow.top) {
+            unplugFromDocument(frameWindow.document);
         }
     }
 }

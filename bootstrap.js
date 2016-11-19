@@ -278,7 +278,6 @@ function plugIntoDocument(document, tab, isFirstDocument) {
             let documentMutationEventListener = new mutationEventListener(tab);
             document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
             document.entObserver.observe(document.body, {childList: true, subtree: true});
-            addHotkeyEventListener(tab);
 
             enableMediaNodeForceAttach(document);
             

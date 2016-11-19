@@ -369,12 +369,15 @@ function pauseAllMediaElementsInDocument(document) {
 
 function onDocumentLoad(event) {
     let document = event.target;
-    let tab = findTabForDocument(document);
-    if (plugIntoDocument(document, tab)) {
-        if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
-            pauseAllMediaElementsInDocument(document);
-        } else {
-            updateIconForTab(tab);
+    let readyState = document.readyState;
+    if (readyState === "interactive" || readyState === "loading") {
+        let tab = findTabForDocument(document);
+        if (plugIntoDocument(document, tab)) {
+            if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
+                pauseAllMediaElementsInDocument(document);
+            } else {
+                updateIconForTab(tab);
+            }
         }
     }
 }
@@ -404,7 +407,7 @@ function initTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         plugIntoTab(tab);
     }
-    tabBrowser.addEventListener("DOMContentLoaded", onDocumentLoad, true);
+    tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
@@ -415,7 +418,7 @@ function clearTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
-    tabBrowser.removeEventListener("DOMContentLoaded", onDocumentLoad, true);
+    tabBrowser.removeEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);

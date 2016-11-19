@@ -102,18 +102,23 @@ function setIconForTab(tab, state) {
         let document = tab.ownerDocument;
         let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
         
-        if (state == STATE_PLAYING) {
-            tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
-            entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
-            entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
-        } else if (state == STATE_PLAYING_MUTED) {
-            tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
-            entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
-            entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
-        } else {
+        if (state == STATE_NOT_PLAYING) {
             tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
-            entIcon.src = null;
+            entIcon.style.display = "none";
+        } else {
+            if (state == STATE_PLAYING) {
+                tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
+                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
+                entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
+            } else if (state == STATE_PLAYING_MUTED) {
+                tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
+                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
+                entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
+            }
+            
+            entIcon.style.display = "inherit";
         }
+        
     }
 }
 

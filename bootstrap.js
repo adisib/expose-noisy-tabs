@@ -331,8 +331,6 @@ function unplugFromDocument(document) {
 
             document.entObserver.disconnect();
             document.entObserver = undefined;
-            let tab = findTabForDocument(document);
-            removeHotkeyEventListener(tab);
 
             let frameElements = document.getElementsByTagName("iframe");
             for (let frameElement of frameElements) {

@@ -381,6 +381,8 @@ function onDocumentLoad(event) {
             } else {
                 updateIconForTab(tab);
             }
+            
+            addHotkeyEventListener(tab);
         }
     }
 }

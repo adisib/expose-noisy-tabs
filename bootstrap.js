@@ -340,8 +340,8 @@ function plugIntoTab(tab) {
     let document = browser.contentDocument;
     if (plugIntoDocument(document, tab)) {
         plugIntoDocumentFrames(document, tab);
-        updateIconForTab(tab);
         addHotkeyEventListener(tab);
+        updateIconForTab(tab);
     }
 }
 

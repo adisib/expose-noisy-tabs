@@ -265,7 +265,7 @@ function mutationEventListener(tab) {
     };
 }
 
-function plugIntoDocument(document, tab) {
+function plugIntoDocument(document, tab, isFirstDocument) {
     if (Components.utils.isDeadWrapper(document) || Components.utils.isDeadWrapper(tab)) {
         return false;
     }
@@ -281,6 +281,11 @@ function plugIntoDocument(document, tab) {
             addHotkeyEventListener(tab);
 
             enableMediaNodeForceAttach(document);
+            
+            if (isFirstDocument) {
+                plugIntoDocumentFrames(document, tab);
+            }
+            
             return true;
         }
     }
@@ -338,8 +343,7 @@ function removeHotkeyEventListener(tab) {
 function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    if (plugIntoDocument(document, tab)) {
-        plugIntoDocumentFrames(document, tab);
+    if (plugIntoDocument(document, tab, true)) {
         addHotkeyEventListener(tab);
         updateIconForTab(tab);
     }

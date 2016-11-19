@@ -297,7 +297,7 @@ function plugIntoDocumentFrames(document, tab) {
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
-            plugIntoDocument(frameWindow.document, tab);
+            plugIntoDocument(frameWindow.document, tab, true);
         }
     }
 }

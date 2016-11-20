@@ -6,7 +6,7 @@
   <Description about="urn:mozilla:install-manifest">
     <!-- Core Data -->
     <em:id>expose-noisy-tabs@wsdfhjxc</em:id>
-    <em:version>0.5.0</em:version>
+    <em:version>0.6.0</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
     <em:optionsURL>chrome://expose-noisy-tabs/content/prefs.xul</em:optionsURL>

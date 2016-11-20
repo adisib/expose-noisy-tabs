@@ -253,24 +253,24 @@ function removeMediaElementEventListeners(window) {
 }
 
 function enableMediaNodeForceAttach(document) {
-    let overwriteFunc = `
-        (function(){
-        var elementConstructor = document.createElement;
-        document.createElement = function (name) {
-            var el = elementConstructor.apply(document, arguments);
-
-            if (el.tagName === "AUDIO" || el.tagName === "VIDEO") {
-                window.setTimeout(function() {
-                    if (!el.parentNode) {
-                        document.body.appendChild(el);
-                    }
-                }, 500);
-            }
-
-            return el;
-        };
-        })();
-    `;
+    let overwriteFunc = '                                           \
+        (function(){                                                \
+        var elementConstructor = document.createElement;            \
+        document.createElement = function (name) {                  \
+            var el = elementConstructor.apply(document, arguments); \
+                                                                    \
+            if (el.tagName === "AUDIO" || el.tagName === "VIDEO") { \
+                window.setTimeout(function() {                      \
+                    if (!el.parentNode) {                           \
+                        document.body.appendChild(el);              \
+                    }                                               \
+                }, 500);                                            \
+            }                                                       \
+                                                                    \
+            return el;                                              \
+        };                                                          \
+        })();                                                       \
+    ';
     
     let scriptInject = document.createElement('script');
     scriptInject.language = "javascript";

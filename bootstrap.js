@@ -212,7 +212,9 @@ function toggleMediaElementsMute(tab) {
 
 function onKeyUp(event) {
     if (Prefs.getValue("enableKeyboardShortcut")) {
-        if (event.ctrlKey && event.keyCode == 77) { // ctrl + m
+        // detect only Ctrl+M combination
+        if (!event.altKey && !event.shiftKey &&
+            event.ctrlKey && event.keyCode == 77) {
             let document = event.view.document;
             let tab = findTabForDocument(document);
             

@@ -281,10 +281,14 @@ function enableMediaNodeForceAttach(document) {
 }
 
 function mutationEventListener(tab) {
+    let browser = tab.linkedBrowser;
+    let document = browser.contentDocument;
+    let window = document.defaultView;
+
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode instanceof HTMLMediaElement || removedNode.tagName == "IFRAME") {
+                if (removedNode instanceof window.HTMLMediaElement || removedNode.tagName == "IFRAME") {
                     updateIconForTab(tab);
                     break;
                 }

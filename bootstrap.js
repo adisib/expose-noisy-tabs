@@ -261,7 +261,7 @@ function enableMediaNodeForceAttach(document) {
         document.createElement = function (name) {                  \
             var el = elementConstructor.apply(document, arguments); \
                                                                     \
-            if (el instanceof HTMLMediaElement) { \
+            if (el instanceof HTMLMediaElement) {                   \
                 window.setTimeout(function() {                      \
                     if (!el.parentNode) {                           \
                         document.body.appendChild(el);              \

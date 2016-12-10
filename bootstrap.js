@@ -277,7 +277,7 @@ function enableMediaNodeForceAttach(document) {
     let scriptInject = document.createElement('script');
     scriptInject.language = "javascript";
     scriptInject.innerHTML = overwriteFunc;
-    document.body.appendChild(scriptInject);
+    document.head.appendChild(scriptInject);
 }
 
 function mutationEventListener(tab) {

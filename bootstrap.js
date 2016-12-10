@@ -31,11 +31,11 @@ let onPrefsApply = null;
 
 function findTabForDocument(document) {
     let documentWindow = document.defaultView.top;
-    
+
     let windowsEnumerator = Services.wm.getEnumerator("navigator:browser");
     while (windowsEnumerator.hasMoreElements()) {
-        let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);    
-        
+        let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
+
         let tabBrowser = window.gBrowser;
         for (let currentTab of tabBrowser.tabs) {
             let browser = window.gBrowser.getBrowserForTab(currentTab);
@@ -45,7 +45,7 @@ function findTabForDocument(document) {
             }
         }
     }
-    
+
     return null;
 }
 
@@ -59,7 +59,7 @@ function createIconForTab(tab) {
     let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
     if (tabLabel) {
         let document = tab.ownerDocument;
-        
+
         let icon = document.createElementNS(XUL_NS, "xul:image");
         icon.className = ENT_ICON_CLASS;
         icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
@@ -71,20 +71,20 @@ function createIconForTab(tab) {
                 event.stopPropagation();
             }
         }, true);
-        
+
         icon.onmouseover = function() {
             icon.style.opacity = 1.0;
         };
-        
+
         icon.onmouseout = function() {
             icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
         };
-        
+
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
-        
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -101,7 +101,7 @@ function setIconForTab(tab, state) {
     if (hasTabIcon(tab) || createIconForTab(tab)) {
         let document = tab.ownerDocument;
         let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
-        
+
         if (state == STATE_NOT_PLAYING) {
             tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
             entIcon.style.display = "none";
@@ -115,30 +115,30 @@ function setIconForTab(tab, state) {
                 entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
             }
-            
+
             entIcon.style.display = "inherit";
         }
-        
+
     }
 }
 
 function updateStatesForDocument(states, document) {
     let hasAnyNonPausedMediaElements = false;
     let hasAnyNonMutedMediaElements = false;
-    
+
     let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
         if (mediaElement.mozHasAudio !== false && !mediaElement.paused &&
             mediaElement.seeking !== true) {
             hasAnyNonPausedMediaElements = true;
-            
+
             if (!mediaElement.muted) {
                 hasAnyNonMutedMediaElements = true;
                 break;
             }
         }
     }
-    
+
     if (hasAnyNonPausedMediaElements) {
         if (hasAnyNonMutedMediaElements) {
             states.playing = true;
@@ -146,8 +146,8 @@ function updateStatesForDocument(states, document) {
             states.playingMuted = true;
         }
     }
-    
-    let frameElements = document.getElementsByTagName("iframe");
+
+    let frameElements = document.getElementsByTagName("IFRAME");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -160,14 +160,14 @@ function updateIconForTab(tab) {
     let browser = tab.linkedBrowser;
     if (browser) {
         let document = browser.contentDocument;
-        
+
         let states = {
             playing: false,
             playingMuted: false
         };
-        
+
         updateStatesForDocument(states, document);
-        
+
         if (states.playing) {
             setIconForTab(tab, STATE_PLAYING);
         } else if (states.playingMuted) {
@@ -180,8 +180,8 @@ function updateIconForTab(tab) {
 
 function getMediaElementsFromDocument(document) {
     let mediaElements = [];
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("VIDEO"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("AUDIO"));
     return mediaElements;
 }
 
@@ -190,8 +190,8 @@ function toggleMediaElementsMuteInDocument(document, mute) {
     for (let mediaElement of mediaElements) {
         mediaElement.muted = mute;
     }
-    
-    let frameElements = document.getElementsByTagName("iframe");
+
+    let frameElements = document.getElementsByTagName("IFRAME");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -205,7 +205,7 @@ function toggleMediaElementsMute(tab) {
         let mute = (tab.getAttribute(ENT_NOISY_ATTRIBUTE) == "true");
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
-        
+
         toggleMediaElementsMuteInDocument(document, mute);
     }
 }
@@ -217,7 +217,7 @@ function onKeyUp(event) {
             event.ctrlKey && event.keyCode == 77) {
             let document = event.view.document;
             let tab = findTabForDocument(document);
-            
+
             toggleMediaElementsMute(tab);
         }
     }
@@ -227,7 +227,7 @@ function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-    
+
     if (event.type === "loadeddata" && !tab.selected &&
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
@@ -261,7 +261,7 @@ function enableMediaNodeForceAttach(document) {
         document.createElement = function (name) {                  \
             var el = elementConstructor.apply(document, arguments); \
                                                                     \
-            if (el.tagName === "AUDIO" || el.tagName === "VIDEO") { \
+            if (el instanceof HTMLMediaElement) { \
                 window.setTimeout(function() {                      \
                     if (!el.parentNode) {                           \
                         document.body.appendChild(el);              \
@@ -273,9 +273,9 @@ function enableMediaNodeForceAttach(document) {
         };                                                          \
         })();                                                       \
     ';
-    
-    let scriptInject = document.createElement('script');
-    scriptInject.language = "javascript";
+
+    let scriptInject = document.createElement("SCRIPT");
+    scriptInject.type = "application/javascript";
     scriptInject.innerHTML = overwriteFunc;
     document.body.appendChild(scriptInject);
 }
@@ -284,8 +284,7 @@ function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode.tagName == "VIDEO" || removedNode.tagName == "AUDIO" ||
-                    removedNode.tagName == "IFRAME") {
+                if (removedNode instanceof HTMLMediaElement || removedNode.tagName == "IFRAME") {
                     updateIconForTab(tab);
                     break;
                 }
@@ -308,20 +307,20 @@ function plugIntoDocument(document, tab, isFirstDocument) {
             let documentMutationEventListener = new mutationEventListener(tab);
             document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
             document.entObserver.observe(document.body, {childList: true, subtree: true});
-            
+
             if (isFirstDocument) {
                 plugIntoDocumentFrames(document, tab);
             }
-            
+
             return true;
         }
     }
-    
+
     return false;
 }
 
 function plugIntoDocumentFrames(document, tab) {
-    let frameElements = document.getElementsByTagName("iframe");
+    let frameElements = document.getElementsByTagName("IFRAME");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -345,7 +344,7 @@ function unplugFromDocument(document) {
 }
 
 function unplugFromDocumentFrames(document) {
-    let frameElements = document.getElementsByTagName("iframe");
+    let frameElements = document.getElementsByTagName("IFRAME");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -373,7 +372,7 @@ function removeHotkeyEventListener(tab) {
 function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    
+
     if (plugIntoDocument(document, tab, true)) {
         addHotkeyEventListener(tab);
         updateIconForTab(tab);
@@ -383,7 +382,7 @@ function plugIntoTab(tab) {
 function unplugFromTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-    
+
     unplugFromDocument(document);
     removeHotkeyEventListener(tab);
     clearIconFromTab(tab);
@@ -394,8 +393,8 @@ function pauseAllMediaElementsInDocument(document) {
     for (let mediaElement of mediaElements) {
         mediaElement.pause();
     }
-    
-    let frameElements = document.getElementsByTagName("iframe");
+
+    let frameElements = document.getElementsByTagName("IFRAME");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -409,14 +408,14 @@ function onDocumentLoad(event) {
     let readyState = document.readyState;
     if (readyState === "interactive" || readyState === "loading") {
         let tab = findTabForDocument(document);
-        
+
         if (plugIntoDocument(document, tab)) {
             if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
                 pauseAllMediaElementsInDocument(document);
             } else {
                 updateIconForTab(tab);
             }
-            
+
             addHotkeyEventListener(tab);
         }
     }
@@ -425,7 +424,7 @@ function onDocumentLoad(event) {
 function onPageHide(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
-    
+
     setTimeout(function() {
         updateIconForTab(tab);
     }, 100);
@@ -448,7 +447,7 @@ function initTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         plugIntoTab(tab);
     }
-    
+
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
@@ -460,7 +459,7 @@ function clearTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
-    
+
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.removeEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
@@ -471,10 +470,10 @@ let windowListener = {
     onOpenWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                            .getInterface(Components.interfaces.nsIDOMWindow);
-                           
+
         window.addEventListener("load", function() {
             window.removeEventListener("load", arguments.callee, false);
-            
+
             if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
                 initTabsForWindow(window);
             }
@@ -484,7 +483,7 @@ let windowListener = {
     onCloseWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                            .getInterface(Components.interfaces.nsIDOMWindow);
-                           
+
         if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
             clearTabsForWindow(window);
         }
@@ -497,13 +496,13 @@ function initWindows() {
         let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
         initTabsForWindow(window);
     }
-    
+
     Services.wm.addListener(windowListener);
 }
 
 function clearWindows() {
     Services.wm.removeListener(windowListener);
-    
+
     let windowsEnumerator = Services.wm.getEnumerator("navigator:browser");
     while (windowsEnumerator.hasMoreElements()) {
         let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -514,12 +513,12 @@ function clearWindows() {
 function startup(data, reason) {
     let Imports = {};
     Components.utils.import("chrome://" + EXT_NAME + "/content/prefs.js", Imports);
-    
+
     Prefs = new Imports.Prefs(DEFAULT_PREFS, EXT_NAME);
-    
+
     Services.obs.addObserver(Prefs.onOpen, "entPrefsOpen", false);
     Services.obs.addObserver(Prefs.onReset, "entPrefsReset", false);
-    
+
     onPrefsApply = {
         observe: function(aSubject, aTopic, aData) {
             Prefs.onApply.observe(aSubject, aTopic, aData);
@@ -527,9 +526,9 @@ function startup(data, reason) {
             initWindows();
         }
     };
-    
+
     Services.obs.addObserver(onPrefsApply, "entPrefsApply", false);
-    
+
     Prefs.init();
     initWindows();
 }
@@ -538,7 +537,7 @@ function shutdown(data, reason) {
     Services.obs.removeObserver(Prefs.onOpen, "entPrefsOpen");
     Services.obs.removeObserver(Prefs.onReset, "entPrefsReset");
     Services.obs.removeObserver(onPrefsApply, "entPrefsApply");
-    
+
     clearWindows();
 }
 

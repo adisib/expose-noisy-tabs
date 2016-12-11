@@ -50,8 +50,11 @@
             <spacer flex="1"/>
             <menulist id="iconTheme">
               <menupopup>
-                <menuitem value="1" label="dark"/>
-                <menuitem value="2" label="light"/>
+                <menuitem value="1" label="dark speaker"/>
+                <menuitem value="2" label="light speaker"/>
+                <menuitem value="3" label="isometric speaker"/>
+                <menuitem value="4" label="retro speaker"/>
+                <menuitem value="5" label="headphones"/>
               </menupopup>
             </menulist>
           </hbox>

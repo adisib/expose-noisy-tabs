@@ -36,13 +36,13 @@
           <hbox flex="0" align="center">
             <label value="Tab icon size in pixels"/>
             <spacer flex="1"/>
-            <textbox id="iconSize" type="number" width="35" min="8" max="32"/>
+            <textbox id="iconSize" type="number" width="45" min="8" max="32"/>
           </hbox>
           
           <hbox flex="0" align="center">
             <label value="Tab icon opacity in percentages"/>
             <spacer flex="1"/>
-            <textbox id="iconOpacity" type="number" width="35" min="30" max="100"/>
+            <textbox id="iconOpacity" type="number" width="45" min="30" max="100"/>
           </hbox>
           
           <hbox flex="0" align="center">

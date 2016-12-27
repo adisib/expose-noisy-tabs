@@ -1,13 +1,13 @@
 ## Expose Noisy Tabs
-This is an extension for Pale Moon web browser which exposes noisy tabs containing audio or video elements. It simply adds indicator icons for tabs when sounds are being played on their websites, but has also possibility to mute them. In addition, it can prevent automatic media playback for new background tabs or at least try to do it as soon as possible.
+This is an extension for Pale Moon web browser, which exposes noisy tabs containing audio or video elements. It simply shows indicator icons for tabs which play sounds, but has also a feature to mute them. In addition, it can prevent automatic media playback for new background tabs or, at least, try to do it as soon as possible.
 
-Works only with HTML5 media elements. Flash is not supported.
+The extension works only with HTML5 media elements. Flash is not supported.
 
 ### Screenshot
-![image](http://i.imgur.com/8MFK1lq.png)
+![Screenshot](http://i.imgur.com/8MFK1lq.png)
 
 ### Usage
-After installation the extension should start adding indicator icons for noisy tabs whenever some HTML5 media element on their websites starts playing sound. You can mute these tabs by clicking on their indicators and unmute them by clicking again or you can use Ctrl+M keyboard shortcut for this purpose. All detailed preferences of the extension are accessible within Add-ons Manager page.
+After installing the extension, whenever some HTML5 media element starts playing sound inside a tab, an indicator icon should appear after its title. You can mute and unmute such a tab by clicking on that indicator. It can also be done with a Ctrl+M keyboard shortcut. You can adjust some settings regarding visual appearance and specific behavior in the extension's preferences.
 
 ### Building
-Run build.sh script in a terminal on Linux or any similar environment for Windows like Cygwin. The extension's .xpi archive containing all necessary files will be created automatically.
+Execute `build.sh` script. The extension .xpi file will be created automatically.

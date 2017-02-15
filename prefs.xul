@@ -34,19 +34,19 @@
         <vbox flex="1">
           
           <hbox flex="0" align="center">
-            <label value="Tab icon size in pixels"/>
+            <label value="Indicator icon size (in pixels)"/>
             <spacer flex="1"/>
             <textbox id="iconSize" type="number" width="55" min="8" max="32"/>
           </hbox>
           
           <hbox flex="0" align="center">
-            <label value="Tab icon opacity in percentages"/>
+            <label value="Indicator icon opacity"/>
             <spacer flex="1"/>
             <textbox id="iconOpacity" type="number" width="55" min="30" max="100"/>
           </hbox>
           
           <hbox flex="0" align="center">
-            <label value="Tab icon theme"/>
+            <label value="Indicator icon theme"/>
             <spacer flex="1"/>
             <menulist id="iconTheme">
               <menupopup>

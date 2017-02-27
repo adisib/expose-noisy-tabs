@@ -147,7 +147,7 @@ function updateStatesForDocument(states, document) {
         }
     }
 
-    let frameElements = document.getElementsByTagName("IFRAME");
+    let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -182,8 +182,8 @@ function updateIconForTab(tab) {
 
 function getMediaElementsFromDocument(document) {
     let mediaElements = [];
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("VIDEO"));
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("AUDIO"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
     return mediaElements;
 }
 
@@ -193,7 +193,7 @@ function toggleMediaElementsMuteInDocument(document, mute) {
         mediaElement.muted = mute;
     }
 
-    let frameElements = document.getElementsByTagName("IFRAME");
+    let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -276,7 +276,7 @@ function enableMediaNodeForceAttach(document) {
         })();                                                       \
     ';
 
-    let scriptInject = document.createElement("SCRIPT");
+    let scriptInject = document.createElement("script");
     scriptInject.type = "application/javascript";
     scriptInject.innerHTML = overwriteFunc;
     document.head.appendChild(scriptInject);
@@ -290,7 +290,7 @@ function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode instanceof window.HTMLMediaElement || removedNode.tagName == "IFRAME") {
+                if (removedNode instanceof window.HTMLMediaElement || removedNode.tagName.toLowerCase() == "iframe") {
                     updateIconForTab(tab);
                     break;
                 }
@@ -304,7 +304,7 @@ function plugIntoDocument(document, tab, isFirstDocument) {
         return false;
     }
 
-    if (document.body && !document.entObserver) {
+    if (document.body && document.head && !document.entObserver) {
         let window = document.defaultView;
         if (window) {
             enableMediaNodeForceAttach(document);
@@ -326,7 +326,7 @@ function plugIntoDocument(document, tab, isFirstDocument) {
 }
 
 function plugIntoDocumentFrames(document, tab) {
-    let frameElements = document.getElementsByTagName("IFRAME");
+    let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -350,7 +350,7 @@ function unplugFromDocument(document) {
 }
 
 function unplugFromDocumentFrames(document) {
-    let frameElements = document.getElementsByTagName("IFRAME");
+    let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
@@ -400,7 +400,7 @@ function pauseAllMediaElementsInDocument(document) {
         mediaElement.pause();
     }
 
-    let frameElements = document.getElementsByTagName("IFRAME");
+    let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {

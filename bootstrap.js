@@ -290,7 +290,8 @@ function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode instanceof window.HTMLMediaElement || removedNode.tagName.toLowerCase() == "iframe") {
+                if (removedNode instanceof window.HTMLMediaElement ||
+                    (removedNode.tagName && removedNode.tagName.toLowerCase() == "iframe")) {
                     updateIconForTab(tab);
                     break;
                 }

@@ -82,6 +82,14 @@ function createIconForTab(tab) {
         
         if (tabLabel.ordinal) { // Tree Style Tab fix
             icon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
+        } else if (tabLabel.getAttribute("tabmix")) { // Tab Mix Plus fix
+            let window = document.defaultView;
+            if (window.getComputedStyle) {
+                let ordinal = window.getComputedStyle(tabLabel, null).getPropertyValue("-moz-box-ordinal-group");
+                if (ordinal) {
+                    icon.setAttribute("ordinal", Number(ordinal) + 1);
+                }
+            }
         }
         
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);

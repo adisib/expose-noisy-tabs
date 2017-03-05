@@ -444,13 +444,15 @@ function onTabMove(event) {
 
 function fixCloseTabButton(event) {
     let tab = event.target;
-    let document = tab.ownerDocument;
-    let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
+    if (hasTabIcon(tab)) {
+        let document = tab.ownerDocument;
+        let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
 
-    if (tab.selected) {
-        closeButton.setAttribute("selected", true);
-    } else {
-        closeButton.removeAttribute("selected");
+        if (tab.selected) {
+            closeButton.setAttribute("selected", true);
+        } else {
+            closeButton.removeAttribute("selected");
+        }
     }
 }
 

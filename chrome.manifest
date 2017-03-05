@@ -1,1 +1,3 @@
-content expose-noisy-tabs /
+content expose-noisy-tabs /forms
+content expose-noisy-tabs /images
+content expose-noisy-tabs /modules

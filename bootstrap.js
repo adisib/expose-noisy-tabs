@@ -11,7 +11,7 @@ const STATE_NOT_PLAYING = 3;
 const ENT_ICON_CLASS = "entIcon";
 const ENT_NOISY_ATTRIBUTE = "entNoisy";
 
-const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/icon_themes/";
+const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
 const NOISY_ICON_NAME = "/noisy.png";
 const NOT_NOISY_ICON_NAME = "/not_noisy.png";
 
@@ -564,7 +564,7 @@ function clearWindows() {
 
 function startup(data, reason) {
     let Imports = {};
-    Components.utils.import("chrome://" + EXT_NAME + "/content/prefs.js", Imports);
+    Components.utils.import("chrome://" + EXT_NAME + "/content/modules/prefs.js", Imports);
 
     Prefs = new Imports.Prefs(DEFAULT_PREFS, EXT_NAME);
 

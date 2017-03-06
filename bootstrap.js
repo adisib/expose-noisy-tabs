@@ -19,7 +19,7 @@ const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
 const DEFAULT_PREFS = {
-    iconSize: 16,
+    iconSize: 14,
     iconOpacity: 75,
     iconTheme: 1,
     enableKeyboardShortcut: true,

@@ -79,7 +79,7 @@ function createIconForTab(tab) {
         icon.onmouseout = function() {
             icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
         };
-        
+
         if (tabLabel.ordinal) { // Tree Style Tab fix
             icon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
         } else if (tabLabel.getAttribute("tabmix")) { // Tab Mix Plus fix
@@ -91,7 +91,7 @@ function createIconForTab(tab) {
                 }
             }
         }
-        
+
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
 
         return true;
@@ -269,23 +269,32 @@ function removeMediaElementEventListeners(window) {
 }
 
 function enableMediaNodeForceAttach(document) {
-    let overwriteFunc = '                                           \
-        (function(){                                                \
-        var elementConstructor = document.createElement;            \
-        document.createElement = function (name) {                  \
-            var el = elementConstructor.apply(document, arguments); \
-                                                                    \
-            if (el instanceof HTMLMediaElement) {                   \
-                window.setTimeout(function() {                      \
-                    if (!el.parentNode) {                           \
-                        document.body.appendChild(el);              \
-                    }                                               \
-                }, 500);                                            \
-            }                                                       \
-                                                                    \
-            return el;                                              \
-        };                                                          \
-        })();                                                       \
+
+    if (!document.getElementById("ENTAttachPoint")) {
+        let attachPoint = document.createElement("div");
+        attachPoint.id = "ENTAttachPoint";
+        attachPoint.style.display = "none";
+        document.body.appendChild(attachPoint);
+    }
+
+    let overwriteFunc = '                                               \
+        (function(){                                                    \
+        var elementConstructor = document.createElement;                \
+        document.createElement = function (name) {                      \
+            var el = elementConstructor.apply(document, arguments);     \
+                                                                        \
+            if (el instanceof HTMLMediaElement) {                       \
+                window.setTimeout(function() {                          \
+                    var ap = document.getElementById("ENTAttachPoint"); \
+                    if (!el.parentNode && !!ap) {                       \
+                        ap.appendChild(el);                             \
+                    }                                                   \
+                }, 500);                                                \
+            }                                                           \
+                                                                        \
+            return el;                                                  \
+        };                                                              \
+        })();                                                           \
     ';
 
     let scriptInject = document.createElement("script");
@@ -477,7 +486,7 @@ function fixIconOrdinal(event) {
             if (tabLabel.ordinal) { // Tree Style Tab fix
                 let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
                 entIcon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
-                
+
                 // force icon element redraw after ordinal change
                 if (entIcon.style.display == "inherit") {
                     entIcon.style.display = "inline";

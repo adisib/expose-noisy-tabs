@@ -52,6 +52,8 @@
               <menupopup>
                 <menuitem value="1" label="dark speaker"/>
                 <menuitem value="2" label="light speaker"/>
+                <menuitem value="6" label="flat dark speaker"/>
+                <menuitem value="7" label="flat light speaker"/>
                 <menuitem value="3" label="isometric speaker"/>
                 <menuitem value="4" label="retro speaker"/>
                 <menuitem value="5" label="headphones"/>

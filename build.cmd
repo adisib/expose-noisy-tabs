@@ -1,0 +1,1 @@
+C:\"Program Files"\7-Zip\7z.exe a expose-noisy-tabs.xpi forms images modules bootstrap.js chrome.manifest install.rdf LICENSE

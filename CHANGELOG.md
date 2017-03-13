@@ -1,4 +1,4 @@
-####0.8.0
+#### 0.8.0
 * fixed breaking media and dynamically loaded content on some websites
 * improved compatibility with XHTML served media elements
 * improved compatibility with Tree Style Tabs and Tab Mix Plus extensions

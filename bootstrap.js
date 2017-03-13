@@ -274,7 +274,7 @@ function enableMediaNodeForceAttach(document) {
         let attachPoint = document.createElement("div");
         attachPoint.id = "ENTAttachPoint";
         attachPoint.style.display = "none";
-        document.body.appendChild(attachPoint);
+        document.documentElement.appendChild(attachPoint);
     }
 
     let overwriteFunc = '                                               \

@@ -4,7 +4,7 @@ This is an extension for Pale Moon web browser, which exposes noisy tabs contain
 The extension works only with HTML5 media elements. Flash is not supported.
 
 ### Screenshot
-![Screenshot](http://i.imgur.com/8MFK1lq.png)
+![Screenshot](http://i.imgur.com/kprb5Qz.png)
 
 ### Usage
 After installing the extension, whenever some HTML5 media element starts playing sound inside a tab, an indicator icon should appear after its title. You can mute and unmute such a tab by clicking on that indicator. It can also be done with a Ctrl+M keyboard shortcut. You can adjust some settings regarding visual appearance and specific behavior in the extension's preferences.

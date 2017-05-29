@@ -159,11 +159,13 @@ function updateStatesForDocument(states, document) {
         }
     }
 
-    let frameElements = document.getElementsByTagName("iframe");
-    for (let frameElement of frameElements) {
-        let frameWindow = frameElement.contentWindow;
-        if (frameWindow != frameWindow.top) {
-            updateStatesForDocument(states, frameWindow.document);
+    if (!hasAnyNonMutedMediaElements) {
+        let frameElements = document.getElementsByTagName("iframe");
+        for (let frameElement of frameElements) {
+            let frameWindow = frameElement.contentWindow;
+            if (frameWindow != frameWindow.top) {
+                updateStatesForDocument(states, frameWindow.document);
+            }
         }
     }
 }
@@ -301,6 +303,10 @@ function enableMediaNodeForceAttach(document) {
     scriptInject.type = "application/javascript";
     scriptInject.innerHTML = overwriteFunc;
     document.head.appendChild(scriptInject);
+
+    // Some websites don't like having another script tag on the DOM
+    // Removing the script element after it runs will satisfy the websites without stopping the code effect
+    document.head.removeChild(scriptInject);
 }
 
 function mutationEventListener(tab) {

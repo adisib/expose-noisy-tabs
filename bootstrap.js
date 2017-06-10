@@ -244,7 +244,7 @@ function onMediaElementEvent(event) {
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
 
-    if (event.type === "loadeddata" && !tab.selected &&
+    if (event.type === "loadstart" && !tab.selected &&
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
     } else {
@@ -257,7 +257,7 @@ function addMediaElementEventListeners(window) {
     window.addEventListener("volumechange", onMediaElementEvent, true);
     window.addEventListener("pause", onMediaElementEvent, true);
     window.addEventListener("emptied", onMediaElementEvent, true);
-    window.addEventListener("loadeddata", onMediaElementEvent, true);
+    window.addEventListener("loadstart", onMediaElementEvent, true);
     window.addEventListener("seeking", onMediaElementEvent, true);
 }
 
@@ -266,7 +266,7 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("volumechange", onMediaElementEvent, true);
     window.removeEventListener("pause", onMediaElementEvent, true);
     window.removeEventListener("emptied", onMediaElementEvent, true);
-    window.removeEventListener("loadeddata", onMediaElementEvent, true);
+    window.removeEventListener("loadstart", onMediaElementEvent, true);
     window.removeEventListener("seeking", onMediaElementEvent, true);
 }
 

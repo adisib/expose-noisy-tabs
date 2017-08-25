@@ -10,6 +10,7 @@ const STATE_NOT_PLAYING = 3;
 
 const ENT_ICON_CLASS = "entIcon";
 const ENT_NOISY_ATTRIBUTE = "entNoisy";
+const ENT_MUTED_ATTRIBUTE = "entMuted";
 
 const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
 const NOISY_ICON_NAME = "/noisy.png";
@@ -217,8 +218,10 @@ function toggleMediaElementsMuteInDocument(document, mute) {
 }
 
 function toggleMediaElementsMute(tab) {
-    if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) != null) {
-        let mute = (tab.getAttribute(ENT_NOISY_ATTRIBUTE) == "true");
+    if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) !== null) {
+        let mute = !(tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true");
+        tab.setAttribute(ENT_MUTED_ATTRIBUTE, mute);
+
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
 
@@ -244,6 +247,9 @@ function onMediaElementEvent(event) {
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
 
+    if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+        mediaElement.muted = true;
+    }
     if (event.type === "loadstart" && !tab.selected &&
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
@@ -444,6 +450,9 @@ function onDocumentLoad(event) {
         let tab = findTabForDocument(document);
 
         if (plugIntoDocument(document, tab)) {
+            if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+                toggleMediaElementsMuteInDocument(document, true);
+            }
             if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
                 pauseAllMediaElementsInDocument(document);
             } else {

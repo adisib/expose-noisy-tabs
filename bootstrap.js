@@ -186,9 +186,9 @@ function updateIconForTab(tab) {
 
             let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
 
-            if (states.playing) {
+            if ((states.playing || states.playingMuted) && !tabMuted) {
                 setIconForTab(tab, STATE_PLAYING);
-            } else if (states.playingMuted || tabMuted) {
+            } else if (tabMuted) {
                 setIconForTab(tab, STATE_MUTED);
             } else if (hasTabIcon(tab)) {
                 setIconForTab(tab, STATE_NOT_PLAYING);

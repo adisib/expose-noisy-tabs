@@ -5,7 +5,7 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const EXT_NAME = "expose-noisy-tabs";
 
 const STATE_PLAYING = 1;
-const STATE_PLAYING_MUTED = 2;
+const STATE_MUTED = 2;
 const STATE_NOT_PLAYING = 3;
 
 const ENT_ICON_CLASS = "entIcon";
@@ -123,7 +123,7 @@ function setIconForTab(tab, state) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
                 entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
-            } else if (state == STATE_PLAYING_MUTED) {
+            } else if (state == STATE_MUTED) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
                 entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
@@ -184,10 +184,12 @@ function updateIconForTab(tab) {
 
             updateStatesForDocument(states, document);
 
-            if (states.playing) {
+            let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
+
+            if ((states.playing || states.playingMuted) && !tabMuted) {
                 setIconForTab(tab, STATE_PLAYING);
-            } else if (states.playingMuted) {
-                setIconForTab(tab, STATE_PLAYING_MUTED);
+            } else if (tabMuted) {
+                setIconForTab(tab, STATE_MUTED);
             } else if (hasTabIcon(tab)) {
                 setIconForTab(tab, STATE_NOT_PLAYING);
             }

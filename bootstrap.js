@@ -11,6 +11,7 @@ const STATE_NOT_PLAYING = 3;
 const ENT_ICON_CLASS = "entIcon";
 const ENT_NOISY_ATTRIBUTE = "entNoisy";
 const ENT_MUTED_ATTRIBUTE = "entMuted";
+const ENT_CONTEXT_MENU_ITEM = "entContext";
 
 const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
 const NOISY_ICON_NAME = "/noisy.png";
@@ -517,11 +518,46 @@ function fixIconOrdinal(event) {
     }
 }
 
+let tabContextMenuPopupShowingListener = function(e) {
+    let document = e.target.ownerDocument;
+    let tab = document.popupNode;
+    let label = (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") ?
+                NOT_NOISY_ICON_TOOLTIPTEXT : NOISY_ICON_TOOLTIPTEXT;
+    let muteTabMenuItem = document.getElementById(ENT_CONTEXT_MENU_ITEM);
+    muteTabMenuItem.setAttribute("label", label);
+};
+
+let tabContextMenuItemCommandListener = function(e) {
+    let document = e.target.ownerDocument;
+    let tab = document.popupNode;
+    toggleTabMute(tab);
+};
+
+function plugIntoTabContextMenu(window) {
+    let document = window.document;
+    let tabContextMenu = window.gBrowser.tabContextMenu;
+    let muteTabMenuItem = document.createElementNS(XUL_NS, "menuitem");
+    muteTabMenuItem.setAttribute("id", ENT_CONTEXT_MENU_ITEM);
+    muteTabMenuItem.addEventListener("command", tabContextMenuItemCommandListener);
+    tabContextMenu.addEventListener("popupshowing", tabContextMenuPopupShowingListener);
+    tabContextMenu.insertBefore(muteTabMenuItem, tabContextMenu.firstChild.nextSibling);
+}
+
+function unplugFromTabContextMenu(window) {
+    let document = window.document;
+    let muteTabMenuItem = document.getElementById(ENT_CONTEXT_MENU_ITEM);
+    let tabContextMenu = window.gBrowser.tabContextMenu;
+    tabContextMenu.removeEventListener("popupshowing", tabContextMenuPopupShowingListener);
+    tabContextMenu.removeChild(muteTabMenuItem);
+}
+
 function initTabsForWindow(window) {
     let tabBrowser = window.gBrowser;
     for (let tab of tabBrowser.tabs) {
         plugIntoTab(tab);
     }
+
+    plugIntoTabContextMenu(window);
 
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);
@@ -535,6 +571,8 @@ function clearTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
+
+    unplugFromTabContextMenu(window);
 
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.removeEventListener("readystatechange", onDocumentLoad, true);

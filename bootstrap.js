@@ -5,11 +5,12 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const EXT_NAME = "expose-noisy-tabs";
 
 const STATE_PLAYING = 1;
-const STATE_PLAYING_MUTED = 2;
+const STATE_MUTED = 2;
 const STATE_NOT_PLAYING = 3;
 
 const ENT_ICON_CLASS = "entIcon";
 const ENT_NOISY_ATTRIBUTE = "entNoisy";
+const ENT_MUTED_ATTRIBUTE = "entMuted";
 
 const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
 const NOISY_ICON_NAME = "/noisy.png";
@@ -122,7 +123,7 @@ function setIconForTab(tab, state) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
                 entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
-            } else if (state == STATE_PLAYING_MUTED) {
+            } else if (state == STATE_MUTED) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
                 entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
@@ -183,10 +184,12 @@ function updateIconForTab(tab) {
 
             updateStatesForDocument(states, document);
 
-            if (states.playing) {
+            let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
+
+            if ((states.playing || states.playingMuted) && !tabMuted) {
                 setIconForTab(tab, STATE_PLAYING);
-            } else if (states.playingMuted) {
-                setIconForTab(tab, STATE_PLAYING_MUTED);
+            } else if (tabMuted) {
+                setIconForTab(tab, STATE_MUTED);
             } else if (hasTabIcon(tab)) {
                 setIconForTab(tab, STATE_NOT_PLAYING);
             }
@@ -217,8 +220,10 @@ function toggleMediaElementsMuteInDocument(document, mute) {
 }
 
 function toggleMediaElementsMute(tab) {
-    if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) != null) {
-        let mute = (tab.getAttribute(ENT_NOISY_ATTRIBUTE) == "true");
+    if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) !== null) {
+        let mute = !(tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true");
+        tab.setAttribute(ENT_MUTED_ATTRIBUTE, mute);
+
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
 
@@ -244,7 +249,10 @@ function onMediaElementEvent(event) {
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
 
-    if (event.type === "loadeddata" && !tab.selected &&
+    if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+        mediaElement.muted = true;
+    }
+    if (event.type === "loadstart" && !tab.selected &&
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
     } else {
@@ -257,7 +265,7 @@ function addMediaElementEventListeners(window) {
     window.addEventListener("volumechange", onMediaElementEvent, true);
     window.addEventListener("pause", onMediaElementEvent, true);
     window.addEventListener("emptied", onMediaElementEvent, true);
-    window.addEventListener("loadeddata", onMediaElementEvent, true);
+    window.addEventListener("loadstart", onMediaElementEvent, true);
     window.addEventListener("seeking", onMediaElementEvent, true);
 }
 
@@ -266,7 +274,7 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("volumechange", onMediaElementEvent, true);
     window.removeEventListener("pause", onMediaElementEvent, true);
     window.removeEventListener("emptied", onMediaElementEvent, true);
-    window.removeEventListener("loadeddata", onMediaElementEvent, true);
+    window.removeEventListener("loadstart", onMediaElementEvent, true);
     window.removeEventListener("seeking", onMediaElementEvent, true);
 }
 
@@ -444,6 +452,9 @@ function onDocumentLoad(event) {
         let tab = findTabForDocument(document);
 
         if (plugIntoDocument(document, tab)) {
+            if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+                toggleMediaElementsMuteInDocument(document, true);
+            }
             if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
                 pauseAllMediaElementsInDocument(document);
             } else {

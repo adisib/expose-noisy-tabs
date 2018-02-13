@@ -171,32 +171,6 @@ function updateStatesForDocument(states, document) {
     }
 }
 
-function updateIconForTab(tab) {
-    if (tab) {
-        let browser = tab.linkedBrowser;
-        if (browser) {
-            let document = browser.contentDocument;
-
-            let states = {
-                playing: false,
-                playingMuted: false
-            };
-
-            updateStatesForDocument(states, document);
-
-            let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
-
-            if ((states.playing || states.playingMuted) && !tabMuted) {
-                setIconForTab(tab, STATE_PLAYING);
-            } else if (tabMuted) {
-                setIconForTab(tab, STATE_MUTED);
-            } else if (hasTabIcon(tab)) {
-                setIconForTab(tab, STATE_NOT_PLAYING);
-            }
-        }
-    }
-}
-
 function getMediaElementsFromDocument(document) {
     let mediaElements = [];
     mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
@@ -206,7 +180,29 @@ function getMediaElementsFromDocument(document) {
 
 function toggleTabMute(tab) {
     toggleMediaElementsMute(tab);
-    updateIconForTab(tab);
+    updateTabState(tab);
+}
+
+function updateTabState(tab) {
+    if (!tab) return;
+
+    let browser = tab.linkedBrowser;
+    if (!browser) return;
+
+    let document = browser.contentDocument;
+
+    let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
+    let states = { playing: false, playingMuted: false };
+    updateStatesForDocument(states, document);
+
+    let tabState = STATE_NOT_PLAYING;
+    if ((states.playing || states.playingMuted) && !tabMuted) {
+        tabState = STATE_PLAYING;
+    } else if (tabMuted) {
+        tabState = STATE_MUTED;
+    }
+
+    setIconForTab(tab, tabState);
 }
 
 function toggleMediaElementsMuteInDocument(document, mute) {
@@ -259,7 +255,7 @@ function onMediaElementEvent(event) {
         Prefs.getValue("preventAutoBackgroundPlayback")) {
         mediaElement.pause();
     } else {
-        updateIconForTab(tab);
+        updateTabState(tab);
     }
 }
 
@@ -330,7 +326,7 @@ function mutationEventListener(tab) {
             for (let removedNode of mutation.removedNodes) {
                 if (removedNode instanceof window.HTMLMediaElement ||
                     (removedNode.tagName && removedNode.tagName.toLowerCase() == "iframe")) {
-                    updateIconForTab(tab);
+                    updateTabState(tab);
                     break;
                 }
             }
@@ -420,7 +416,7 @@ function plugIntoTab(tab) {
 
     if (plugIntoDocument(document, tab, true)) {
         addHotkeyEventListener(tab);
-        updateIconForTab(tab);
+        updateTabState(tab);
     }
 }
 
@@ -461,7 +457,7 @@ function onDocumentLoad(event) {
             if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
                 pauseAllMediaElementsInDocument(document);
             } else {
-                updateIconForTab(tab);
+                updateTabState(tab);
             }
 
             addHotkeyEventListener(tab);
@@ -474,13 +470,13 @@ function onPageHide(event) {
     let tab = findTabForDocument(document);
 
     setTimeout(function() {
-        updateIconForTab(tab);
+        updateTabState(tab);
     }, 100);
 }
 
 function onTabMove(event) {
     let tab = event.target;
-    updateIconForTab(tab);
+    updateTabState(tab);
 }
 
 function fixCloseTabButton(event) {

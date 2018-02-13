@@ -68,7 +68,7 @@ function createIconForTab(tab) {
         icon.style.height = icon.style.width;
         icon.addEventListener("mousedown", function(event) {
             if (event.button == 0) {
-                toggleMediaElementsMute(tab);
+                toggleTabMute(tab);
                 event.stopPropagation();
             }
         }, true);
@@ -204,6 +204,11 @@ function getMediaElementsFromDocument(document) {
     return mediaElements;
 }
 
+function toggleTabMute(tab) {
+    toggleMediaElementsMute(tab);
+    updateIconForTab(tab);
+}
+
 function toggleMediaElementsMuteInDocument(document, mute) {
     let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
@@ -226,7 +231,6 @@ function toggleMediaElementsMute(tab) {
 
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
-
         toggleMediaElementsMuteInDocument(document, mute);
     }
 }
@@ -238,8 +242,7 @@ function onKeyUp(event) {
             event.ctrlKey && event.keyCode == 77) {
             let document = event.view.document;
             let tab = findTabForDocument(document);
-
-            toggleMediaElementsMute(tab);
+            toggleTabMute(tab);
         }
     }
 }

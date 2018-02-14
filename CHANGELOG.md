@@ -1,3 +1,11 @@
+#### 1.0.0
+* Fixed issues with few websites.
+* Maybe introduced issues with another ones.
+* Added tab context menu for muting/unmuting tabs.
+* Added feature to manually mute tabs in advance.
+* Added feature to remember tab muted state.
+* Changed indicator icons to scalable vector graphics.
+
 #### 0.8.0
 * Fixed breaking media and dynamically loaded content on some websites.
 * Improved compatibility with XHTML served media elements.

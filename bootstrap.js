@@ -14,8 +14,8 @@ const ENT_MUTED_ATTRIBUTE = "entMuted";
 const ENT_CONTEXT_MENU_ITEM = "entContext";
 
 const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
-const NOISY_ICON_NAME = "/noisy.png";
-const NOT_NOISY_ICON_NAME = "/not_noisy.png";
+const NOISY_ICON_NAME = "/noisy.svg";
+const NOT_NOISY_ICON_NAME = "/not_noisy.svg";
 
 const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";

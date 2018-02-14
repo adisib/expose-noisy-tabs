@@ -131,6 +131,8 @@ function setIconForTab(tab, state) {
             }
 
             entIcon.style.display = "inherit";
+            entIcon.style.marginLeft = "2px";
+            entIcon.style.marginRight = "2px";
         }
 
     }

@@ -57,6 +57,18 @@
               </menupopup>
             </menulist>
           </hbox>
+
+          <hbox flex="0" align="center">
+            <label value="Indicator icon color"/>
+            <spacer flex="1"/>
+            <menulist id="iconColor">
+              <menupopup>
+                <menuitem value="1" label="black"/>
+                <menuitem value="2" label="white"/>
+                <menuitem value="3" label="grey"/>
+              </menupopup>
+            </menulist>
+          </hbox>
           
           <spacer flex="0" height="15"/>
           

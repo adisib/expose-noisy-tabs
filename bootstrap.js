@@ -24,6 +24,7 @@ const DEFAULT_PREFS = {
     iconSize: 14,
     iconOpacity: 75,
     iconThemeVariant: 1,
+    iconColor: 1,
     enableKeyboardShortcut: true,
     preventAutoBackgroundPlayback: false
 };
@@ -120,13 +121,14 @@ function setIconForTab(tab, state) {
             tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
             entIcon.style.display = "none";
         } else {
+            let src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + "/" + Prefs.getValue("iconColor");
             if (state == STATE_PLAYING) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
-                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + NOISY_ICON_NAME;
+                entIcon.src = src + NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
             } else if (state == STATE_MUTED) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
-                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + NOT_NOISY_ICON_NAME;
+                entIcon.src = src + NOT_NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
             }
 

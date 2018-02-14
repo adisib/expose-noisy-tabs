@@ -23,7 +23,7 @@ const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 const DEFAULT_PREFS = {
     iconSize: 14,
     iconOpacity: 75,
-    iconTheme: 1,
+    iconThemeVariant: 1,
     enableKeyboardShortcut: true,
     preventAutoBackgroundPlayback: false
 };
@@ -122,11 +122,11 @@ function setIconForTab(tab, state) {
         } else {
             if (state == STATE_PLAYING) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
-                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOISY_ICON_NAME;
+                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
             } else if (state == STATE_MUTED) {
                 tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
-                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconTheme") + NOT_NOISY_ICON_NAME;
+                entIcon.src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + NOT_NOISY_ICON_NAME;
                 entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
             }
 

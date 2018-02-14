@@ -48,7 +48,7 @@
           <hbox flex="0" align="center">
             <label value="Indicator icon theme"/>
             <spacer flex="1"/>
-            <menulist id="iconTheme">
+            <menulist id="iconThemeVariant">
               <menupopup>
                 <menuitem value="1" label="simple speaker v1"/>
                 <menuitem value="2" label="simple speaker v2"/>

@@ -484,9 +484,17 @@ function onTabMove(event) {
     updateTabState(tab);
 }
 
-function fixCloseTabButton(event) {
+function onTabSelect(event) {
     let tab = event.target;
+    fixIconOrdinal(tab);
+}
 
+function onTabModified(event) {
+    let tab = event.target;
+    fixCloseTabButton(tab);
+}
+
+function fixCloseTabButton(tab) {
     if (!hasTabIcon(tab)) return;
 
     let document = tab.ownerDocument;
@@ -505,28 +513,27 @@ function fixCloseTabButton(event) {
     }
 }
 
-function fixIconOrdinal(event) {
-    let tab = event.target;
-    if (hasTabIcon(tab)) {
-        setTimeout(function() {
-            let document = tab.ownerDocument;
-            let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
-            if (tabLabel.ordinal) { // Tree Style Tab fix
-                let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
-                entIcon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
+function fixIconOrdinal(tab) {
+    if (!hasTabIcon(tab)) return;
+    
+    setTimeout(function() {
+        let document = tab.ownerDocument;
+        let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
+        if (tabLabel.ordinal) { // Tree Style Tab fix
+            let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
+            entIcon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
 
-                // force icon element redraw after ordinal change
-                if (entIcon.style.display == "inherit") {
-                    entIcon.style.display = "inline";
-                    setTimeout(function() {
-                        if (entIcon.style.display != "none") {
-                            entIcon.style.display = "inherit";
-                        }
-                    }, 0);
-                }
+            // force icon element redraw after ordinal change
+            if (entIcon.style.display == "inherit") {
+                entIcon.style.display = "inline";
+                setTimeout(function() {
+                    if (entIcon.style.display != "none") {
+                        entIcon.style.display = "inherit";
+                    }
+                }, 0);
             }
-        }, 100);
-    }
+        }
+    }, 100);
 }
 
 let tabContextMenuPopupShowingListener = function(e) {
@@ -573,9 +580,9 @@ function initTabsForWindow(window) {
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
-    tabBrowser.tabContainer.addEventListener("TabSelect", fixIconOrdinal, false);
-    tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
-    tabBrowser.tabContainer.addEventListener("TabPinned", fixCloseTabButton, false);
+    tabBrowser.tabContainer.addEventListener("TabSelect", onTabSelect, false);
+    tabBrowser.tabContainer.addEventListener("TabAttrModified", onTabModified, false);
+    tabBrowser.tabContainer.addEventListener("TabPinned", onTabModified, false);
 }
 
 function clearTabsForWindow(window) {
@@ -589,9 +596,9 @@ function clearTabsForWindow(window) {
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
     tabBrowser.removeEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
-    tabBrowser.tabContainer.removeEventListener("TabSelect", fixIconOrdinal, false);
-    tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
-    tabBrowser.tabContainer.removeEventListener("TabPinned", fixCloseTabButton, false);
+    tabBrowser.tabContainer.removeEventListener("TabSelect", onTabSelect, false);
+    tabBrowser.tabContainer.removeEventListener("TabAttrModified", onTabModified, false);
+    tabBrowser.tabContainer.removeEventListener("TabPinned", onTabModified, false);
 }
 
 let windowListener = {

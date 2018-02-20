@@ -486,15 +486,19 @@ function onTabMove(event) {
 
 function fixCloseTabButton(event) {
     let tab = event.target;
-    if (hasTabIcon(tab)) {
-        let document = tab.ownerDocument;
-        let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
+    let document = tab.ownerDocument;
+    let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
 
-        if (tab.selected) {
-            closeButton.setAttribute("selected", true);
-        } else {
-            closeButton.removeAttribute("selected");
-        }
+    if (tab.selected) {
+        closeButton.setAttribute("selected", true);
+    } else {
+        closeButton.removeAttribute("selected");
+    }
+
+    if (tab.pinned) {
+        closeButton.removeAttribute("fadein");
+    } else {
+        closeButton.setAttribute("fadein", true);
     }
 }
 
@@ -568,6 +572,7 @@ function initTabsForWindow(window) {
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.addEventListener("TabSelect", fixIconOrdinal, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
+    tabBrowser.tabContainer.addEventListener("TabPinned", fixCloseTabButton, false);
 }
 
 function clearTabsForWindow(window) {
@@ -583,6 +588,7 @@ function clearTabsForWindow(window) {
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
     tabBrowser.tabContainer.removeEventListener("TabSelect", fixIconOrdinal, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
+    tabBrowser.tabContainer.removeEventListener("TabPinned", fixCloseTabButton, false);
 }
 
 let windowListener = {

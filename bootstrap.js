@@ -96,6 +96,7 @@ function createIconForTab(tab) {
         }
 
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
+        fixCloseTabButton(tab);
 
         return true;
     }

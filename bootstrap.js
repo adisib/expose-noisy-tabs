@@ -486,6 +486,9 @@ function onTabMove(event) {
 
 function fixCloseTabButton(event) {
     let tab = event.target;
+
+    if (!hasTabIcon(tab)) return;
+
     let document = tab.ownerDocument;
     let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
 

@@ -583,6 +583,7 @@ function initTabsForWindow(window) {
     tabBrowser.tabContainer.addEventListener("TabSelect", onTabSelect, false);
     tabBrowser.tabContainer.addEventListener("TabAttrModified", onTabModified, false);
     tabBrowser.tabContainer.addEventListener("TabPinned", onTabModified, false);
+    tabBrowser.tabContainer.addEventListener("TabUnpinned", onTabModified, false);
 }
 
 function clearTabsForWindow(window) {
@@ -599,6 +600,7 @@ function clearTabsForWindow(window) {
     tabBrowser.tabContainer.removeEventListener("TabSelect", onTabSelect, false);
     tabBrowser.tabContainer.removeEventListener("TabAttrModified", onTabModified, false);
     tabBrowser.tabContainer.removeEventListener("TabPinned", onTabModified, false);
+    tabBrowser.tabContainer.removeEventListener("TabUnpinned", onTabModified, false);
 }
 
 let windowListener = {

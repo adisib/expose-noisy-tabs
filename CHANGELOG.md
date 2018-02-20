@@ -1,3 +1,6 @@
+#### 1.0.1
+* Fixed issues with tab close buttons.
+
 #### 1.0.0
 * Fixed issues with few websites.
 * Maybe introduced issues with another ones.

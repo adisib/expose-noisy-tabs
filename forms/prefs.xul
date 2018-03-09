@@ -73,6 +73,10 @@
           <spacer flex="0" height="15"/>
           
           <hbox flex="0" align="center">
+            <checkbox id="enableTabContextMenuEntry" label="Enable tab context menu entry for muting/unmuting tabs"/>
+          </hbox>
+          
+          <hbox flex="0" align="center">
             <checkbox id="enableKeyboardShortcut" label="Enable Ctrl+M keyboard shortcut for muting/unmuting active tab"/>
           </hbox>
           

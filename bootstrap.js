@@ -25,6 +25,7 @@ const DEFAULT_PREFS = {
     iconOpacity: 75,
     iconThemeVariant: 1,
     iconColor: 1,
+    enableTabContextMenuEntry: true,
     enableKeyboardShortcut: true,
     preventAutoBackgroundPlayback: false
 };
@@ -565,9 +566,11 @@ function plugIntoTabContextMenu(window) {
 function unplugFromTabContextMenu(window) {
     let document = window.document;
     let muteTabMenuItem = document.getElementById(ENT_CONTEXT_MENU_ITEM);
-    let tabContextMenu = window.gBrowser.tabContextMenu;
-    tabContextMenu.removeEventListener("popupshowing", tabContextMenuPopupShowingListener);
-    tabContextMenu.removeChild(muteTabMenuItem);
+    if (muteTabMenuItem) {
+        let tabContextMenu = window.gBrowser.tabContextMenu;
+        tabContextMenu.removeEventListener("popupshowing", tabContextMenuPopupShowingListener);
+        tabContextMenu.removeChild(muteTabMenuItem);
+    }
 }
 
 function initTabsForWindow(window) {
@@ -576,7 +579,9 @@ function initTabsForWindow(window) {
         plugIntoTab(tab);
     }
 
-    plugIntoTabContextMenu(window);
+    if (Prefs.getValue("enableTabContextMenuEntry")) {
+        plugIntoTabContextMenu(window);
+    }
 
     tabBrowser.addEventListener("pagehide", onPageHide, true);
     tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);

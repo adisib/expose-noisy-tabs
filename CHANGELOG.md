@@ -1,3 +1,6 @@
+#### 1.1.0
+* Changed tab context menu entry to be optional.
+
 #### 1.0.1
 * Fixed issues with tab close buttons.
 

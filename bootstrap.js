@@ -253,13 +253,18 @@ function onKeyUp(event) {
 function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
+
+    if ( !(mediaElement instanceof document.defaultView.HTMLMediaElement) ) {
+        return;
+    }
+
     let tab = findTabForDocument(document);
 
     if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
         mediaElement.muted = true;
     }
-    if (event.type === "loadstart" && !tab.selected &&
-        Prefs.getValue("preventAutoBackgroundPlayback")) {
+    if (Prefs.getValue("preventAutoBackgroundPlayback") &&
+        event.type === "loadstart" && !tab.selected) {
         mediaElement.pause();
     } else {
         updateTabState(tab);

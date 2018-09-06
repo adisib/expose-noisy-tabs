@@ -6,11 +6,10 @@
   <Description about="urn:mozilla:install-manifest">
     <!-- Core Data -->
     <em:id>expose-noisy-tabs@wsdfhjxc</em:id>
-    <em:version>1.1.0</em:version>
+    <em:version>99.99.0</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
-    <em:optionsURL>chrome://expose-noisy-tabs/content/forms/prefs.xul</em:optionsURL>
-    <em:iconURL>chrome://expose-noisy-tabs/content/images/icon.png</em:iconURL>
+    <em:iconURL>chrome://expose-noisy-tabs/content/icon.png</em:iconURL>
     
     <!-- Pale Moon -->
     <em:targetApplication>

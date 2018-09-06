@@ -13,33 +13,17 @@ const ENT_NOISY_ATTRIBUTE = "entNoisy";
 const ENT_MUTED_ATTRIBUTE = "entMuted";
 const ENT_CONTEXT_MENU_ITEM = "entContext";
 
-const ICON_THEMES_PATH = "chrome://" + EXT_NAME + "/content/images/indicators/";
-const NOISY_ICON_NAME = "/noisy.svg";
-const NOT_NOISY_ICON_NAME = "/not_noisy.svg";
+const NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon.svg";
+const NOT_NOISY_ICON_SRC = "chrome://" + EXT_NAME + "/content/tab_icon_muted.svg";
 
 const NOISY_ICON_TOOLTIPTEXT = "Mute this tab";
 const NOT_NOISY_ICON_TOOLTIPTEXT = "Unmute this tab";
 
-const DEFAULT_PREFS = {
-    iconSize: 14,
-    iconOpacity: 75,
-    iconThemeVariant: 1,
-    iconColor: 1,
-    enableTabContextMenuEntry: true,
-    enableKeyboardShortcut: true,
-    preventAutoBackgroundPlayback: false
-};
-
-let Prefs = null;
-let onPrefsApply = null;
-
 function findTabForDocument(document) {
     let documentWindow = document.defaultView.top;
-
     let windowsEnumerator = Services.wm.getEnumerator("navigator:browser");
     while (windowsEnumerator.hasMoreElements()) {
         let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
-
         let tabBrowser = window.gBrowser;
         for (let currentTab of tabBrowser.tabs) {
             let browser = window.gBrowser.getBrowserForTab(currentTab);
@@ -49,13 +33,12 @@ function findTabForDocument(document) {
             }
         }
     }
-
     return null;
 }
 
 function hasTabIcon(tab) {
     let document = tab.ownerDocument;
-    return (document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS) != null);
+    return (document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS) !== null);
 }
 
 function createIconForTab(tab) {
@@ -63,45 +46,14 @@ function createIconForTab(tab) {
     let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
     if (tabLabel) {
         let document = tab.ownerDocument;
-
         let icon = document.createElementNS(XUL_NS, "xul:image");
         icon.className = ENT_ICON_CLASS;
-        icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
-        icon.style.width = Prefs.getValue("iconSize") + "px";
+		icon.style.opacity = 1;
+        icon.style.width = "12px";
         icon.style.height = icon.style.width;
-        icon.addEventListener("mousedown", function(event) {
-            if (event.button == 0) {
-                toggleTabMute(tab);
-                event.stopPropagation();
-            }
-        }, true);
-
-        icon.onmouseover = function() {
-            icon.style.opacity = 1.0;
-        };
-
-        icon.onmouseout = function() {
-            icon.style.opacity = Prefs.getValue("iconOpacity") / 100;
-        };
-
-        if (tabLabel.ordinal) { // Tree Style Tab fix
-            icon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
-        } else if (tabLabel.getAttribute("tabmix")) { // Tab Mix Plus fix
-            let window = document.defaultView;
-            if (window.getComputedStyle) {
-                let ordinal = window.getComputedStyle(tabLabel, null).getPropertyValue("-moz-box-ordinal-group");
-                if (ordinal) {
-                    icon.setAttribute("ordinal", Number(ordinal) + 1);
-                }
-            }
-        }
-
         tabLabel.parentNode.insertBefore(icon, tabLabel.nextSibling);
-        fixCloseTabButton(tab);
-
         return true;
     }
-
     return false;
 }
 
@@ -118,47 +70,38 @@ function setIconForTab(tab, state) {
     if (hasTabIcon(tab) || createIconForTab(tab)) {
         let document = tab.ownerDocument;
         let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
-
-        if (state == STATE_NOT_PLAYING) {
+        if (state === STATE_PLAYING) {
+            tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
+			entIcon.src = NOISY_ICON_SRC;
+            entIcon.style.display = "inherit";
+        } else if (state == STATE_MUTED) {
+            tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
+			entIcon.src = NOT_NOISY_ICON_SRC;
+            entIcon.style.display = "inherit";
+        } else {
             tab.removeAttribute(ENT_NOISY_ATTRIBUTE);
             entIcon.style.display = "none";
-        } else {
-            let src = ICON_THEMES_PATH + Prefs.getValue("iconThemeVariant") + "/" + Prefs.getValue("iconColor");
-            if (state == STATE_PLAYING) {
-                tab.setAttribute(ENT_NOISY_ATTRIBUTE, true);
-                entIcon.src = src + NOISY_ICON_NAME;
-                entIcon.setAttribute("tooltiptext", NOISY_ICON_TOOLTIPTEXT);
-            } else if (state == STATE_MUTED) {
-                tab.setAttribute(ENT_NOISY_ATTRIBUTE, false);
-                entIcon.src = src + NOT_NOISY_ICON_NAME;
-                entIcon.setAttribute("tooltiptext", NOT_NOISY_ICON_TOOLTIPTEXT);
-            }
-
-            entIcon.style.display = "inherit";
-            entIcon.style.marginLeft = "2px";
-            entIcon.style.marginRight = "2px";
         }
-
+		entIcon.style.marginLeft = "3px";
+		entIcon.style.marginRight = "3px";
     }
 }
 
 function updateStatesForDocument(states, document) {
+    let mediaElements = getMediaElementsFromDocument(document);
     let hasAnyNonPausedMediaElements = false;
     let hasAnyNonMutedMediaElements = false;
-
-    let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
-        if (mediaElement.mozHasAudio !== false && !mediaElement.paused &&
-            mediaElement.seeking !== true) {
-            hasAnyNonPausedMediaElements = true;
-
-            if (!mediaElement.muted) {
-                hasAnyNonMutedMediaElements = true;
-                break;
+        if (mediaElement.mozHasAudio !== false) {
+            if (!mediaElement.paused) {
+                hasAnyNonPausedMediaElements = true;
+                if (!mediaElement.muted) {
+                    hasAnyNonMutedMediaElements = true;
+                    break;
+                }
             }
         }
     }
-
     if (hasAnyNonPausedMediaElements) {
         if (hasAnyNonMutedMediaElements) {
             states.playing = true;
@@ -178,26 +121,12 @@ function updateStatesForDocument(states, document) {
     }
 }
 
-function getMediaElementsFromDocument(document) {
-    let mediaElements = [];
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
-    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
-    return mediaElements;
-}
-
-function toggleTabMute(tab) {
-    toggleMediaElementsMute(tab);
-    updateTabState(tab);
-}
-
 function updateTabState(tab) {
     if (!tab) return;
-
     let browser = tab.linkedBrowser;
     if (!browser) return;
 
     let document = browser.contentDocument;
-
     let tabMuted = tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true";
     let states = { playing: false, playingMuted: false };
     updateStatesForDocument(states, document);
@@ -212,17 +141,28 @@ function updateTabState(tab) {
     setIconForTab(tab, tabState);
 }
 
-function toggleMediaElementsMuteInDocument(document, mute) {
+function getMediaElementsFromDocument(document) {
+    let mediaElements = [];
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("video"));
+    mediaElements.push.apply(mediaElements, document.getElementsByTagName("audio"));
+    return mediaElements;
+}
+
+function toggleTabMute(tab) {
+	toggleMediaElementsMute(tab);
+	updateTabState(tab);
+}
+
+function toggleMuteMediaElementsInDocument(document, mute) {
     let mediaElements = getMediaElementsFromDocument(document);
     for (let mediaElement of mediaElements) {
         mediaElement.muted = mute;
     }
-
     let frameElements = document.getElementsByTagName("iframe");
     for (let frameElement of frameElements) {
         let frameWindow = frameElement.contentWindow;
         if (frameWindow != frameWindow.top) {
-            toggleMediaElementsMuteInDocument(frameWindow.document, mute);
+            toggleMuteMediaElementsInDocument(frameWindow.document, mute);
         }
     }
 }
@@ -230,23 +170,10 @@ function toggleMediaElementsMuteInDocument(document, mute) {
 function toggleMediaElementsMute(tab) {
     if (tab.getAttribute(ENT_NOISY_ATTRIBUTE) !== null) {
         let mute = !(tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true");
-        tab.setAttribute(ENT_MUTED_ATTRIBUTE, mute);
-
+		tab.setAttribute(ENT_MUTED_ATTRIBUTE, mute);
         let browser = tab.linkedBrowser;
         let document = browser.contentDocument;
-        toggleMediaElementsMuteInDocument(document, mute);
-    }
-}
-
-function onKeyUp(event) {
-    if (Prefs.getValue("enableKeyboardShortcut")) {
-        // detect only Ctrl+M combination
-        if (!event.altKey && !event.shiftKey &&
-            event.ctrlKey && event.keyCode == 77) {
-            let document = event.view.document;
-            let tab = findTabForDocument(document);
-            toggleTabMute(tab);
-        }
+        toggleMuteMediaElementsInDocument(document, mute);
     }
 }
 
@@ -254,16 +181,10 @@ function onMediaElementEvent(event) {
     let mediaElement = event.target;
     let document = mediaElement.ownerDocument;
     let tab = findTabForDocument(document);
-
-    if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+	if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
         mediaElement.muted = true;
     }
-    if (event.type === "loadstart" && !tab.selected &&
-        Prefs.getValue("preventAutoBackgroundPlayback")) {
-        mediaElement.pause();
-    } else {
-        updateTabState(tab);
-    }
+    updateTabState(tab);
 }
 
 function addMediaElementEventListeners(window) {
@@ -271,8 +192,6 @@ function addMediaElementEventListeners(window) {
     window.addEventListener("volumechange", onMediaElementEvent, true);
     window.addEventListener("pause", onMediaElementEvent, true);
     window.addEventListener("emptied", onMediaElementEvent, true);
-    window.addEventListener("loadstart", onMediaElementEvent, true);
-    window.addEventListener("seeking", onMediaElementEvent, true);
 }
 
 function removeMediaElementEventListeners(window) {
@@ -280,47 +199,6 @@ function removeMediaElementEventListeners(window) {
     window.removeEventListener("volumechange", onMediaElementEvent, true);
     window.removeEventListener("pause", onMediaElementEvent, true);
     window.removeEventListener("emptied", onMediaElementEvent, true);
-    window.removeEventListener("loadstart", onMediaElementEvent, true);
-    window.removeEventListener("seeking", onMediaElementEvent, true);
-}
-
-function enableMediaNodeForceAttach(document) {
-
-    if (!document.getElementById("ENTAttachPoint")) {
-        let attachPoint = document.createElement("div");
-        attachPoint.id = "ENTAttachPoint";
-        attachPoint.style.display = "none";
-        document.documentElement.appendChild(attachPoint);
-    }
-
-    let overwriteFunc = '                                               \
-        (function(){                                                    \
-        var elementConstructor = document.createElement;                \
-        document.createElement = function (name) {                      \
-            var el = elementConstructor.apply(document, arguments);     \
-                                                                        \
-            if (el instanceof HTMLMediaElement) {                       \
-                window.setTimeout(function() {                          \
-                    var ap = document.getElementById("ENTAttachPoint"); \
-                    if (!el.parentNode && !!ap) {                       \
-                        ap.appendChild(el);                             \
-                    }                                                   \
-                }, 500);                                                \
-            }                                                           \
-                                                                        \
-            return el;                                                  \
-        };                                                              \
-        })();                                                           \
-    ';
-
-    let scriptInject = document.createElement("script");
-    scriptInject.type = "application/javascript";
-    scriptInject.innerHTML = overwriteFunc;
-    document.head.appendChild(scriptInject);
-
-    // Some websites don't like having another script tag on the DOM
-    // Removing the script element after it runs will satisfy the websites without stopping the code effect
-    document.head.removeChild(scriptInject);
 }
 
 function mutationEventListener(tab) {
@@ -331,8 +209,7 @@ function mutationEventListener(tab) {
     this.onMutations = function(mutations) {
         mutations.forEach(function(mutation) {
             for (let removedNode of mutation.removedNodes) {
-                if (removedNode instanceof window.HTMLMediaElement ||
-                    (removedNode.tagName && removedNode.tagName.toLowerCase() == "iframe")) {
+                if (removedNode instanceof window.HTMLMediaElement || removedNode.tagName === "iframe") {
                     updateTabState(tab);
                     break;
                 }
@@ -341,40 +218,22 @@ function mutationEventListener(tab) {
     };
 }
 
-function plugIntoDocument(document, tab, isFirstDocument) {
-    if (Components.utils.isDeadWrapper(document) || Components.utils.isDeadWrapper(tab)) {
+function plugIntoDocument(document, tab) {
+    if (!document || !tab || Components.utils.isDeadWrapper(document) || Components.utils.isDeadWrapper(tab)) {
         return false;
     }
 
-    if (document.body && document.head && !document.entObserver) {
+    if (document.body && !document.entObserver) {
         let window = document.defaultView;
         if (window) {
-            enableMediaNodeForceAttach(document);
             addMediaElementEventListeners(window);
-
             let documentMutationEventListener = new mutationEventListener(tab);
             document["entObserver"] = new window.MutationObserver(documentMutationEventListener.onMutations);
             document.entObserver.observe(document.body, {childList: true, subtree: true});
-
-            if (isFirstDocument) {
-                plugIntoDocumentFrames(document, tab);
-            }
-
             return true;
         }
     }
-
     return false;
-}
-
-function plugIntoDocumentFrames(document, tab) {
-    let frameElements = document.getElementsByTagName("iframe");
-    for (let frameElement of frameElements) {
-        let frameWindow = frameElement.contentWindow;
-        if (frameWindow != frameWindow.top) {
-            plugIntoDocument(frameWindow.document, tab, true);
-        }
-    }
 }
 
 function unplugFromDocument(document) {
@@ -382,47 +241,24 @@ function unplugFromDocument(document) {
         let window = document.defaultView;
         if (window) {
             removeMediaElementEventListeners(window);
-
             document.entObserver.disconnect();
             document.entObserver = undefined;
 
-            unplugFromDocumentFrames(document);
+            let frameElements = document.getElementsByTagName("iframe");
+            for (let frameElement of frameElements) {
+                let frameWindow = frameElement.contentWindow;
+                if (frameWindow != frameWindow.top) {
+                    unplugFromDocument(frameWindow.document);
+                }
+            }
         }
-    }
-}
-
-function unplugFromDocumentFrames(document) {
-    let frameElements = document.getElementsByTagName("iframe");
-    for (let frameElement of frameElements) {
-        let frameWindow = frameElement.contentWindow;
-        if (frameWindow != frameWindow.top) {
-            unplugFromDocument(frameWindow.document);
-        }
-    }
-}
-
-function addHotkeyEventListener(tab) {
-    if (tab) {
-        let browser = tab.linkedBrowser;
-        let document = browser.contentDocument;
-        document.addEventListener("keyup", onKeyUp, false);
-    }
-}
-
-function removeHotkeyEventListener(tab) {
-    if (tab) {
-        let browser = tab.linkedBrowser;
-        let document = browser.contentDocument;
-        document.removeEventListener("keyup", onKeyUp, false);
     }
 }
 
 function plugIntoTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-
-    if (plugIntoDocument(document, tab, true)) {
-        addHotkeyEventListener(tab);
+    if (plugIntoDocument(document, tab)) {
         updateTabState(tab);
     }
 }
@@ -430,52 +266,24 @@ function plugIntoTab(tab) {
 function unplugFromTab(tab) {
     let browser = tab.linkedBrowser;
     let document = browser.contentDocument;
-
     unplugFromDocument(document);
-    removeHotkeyEventListener(tab);
     clearIconFromTab(tab);
-}
-
-function pauseAllMediaElementsInDocument(document) {
-    let mediaElements = getMediaElementsFromDocument(document);
-    for (let mediaElement of mediaElements) {
-        mediaElement.pause();
-    }
-
-    let frameElements = document.getElementsByTagName("iframe");
-    for (let frameElement of frameElements) {
-        let frameWindow = frameElement.contentWindow;
-        if (frameWindow != frameWindow.top) {
-            pauseAllMediaElementsInDocument(frameWindow.document);
-        }
-    }
 }
 
 function onDocumentLoad(event) {
     let document = event.target;
-    let readyState = document.readyState;
-    if (readyState === "interactive" || readyState === "loading") {
-        let tab = findTabForDocument(document);
-
-        if (plugIntoDocument(document, tab)) {
-            if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
-                toggleMediaElementsMuteInDocument(document, true);
-            }
-            if (!tab.selected && Prefs.getValue("preventAutoBackgroundPlayback")) {
-                pauseAllMediaElementsInDocument(document);
-            } else {
-                updateTabState(tab);
-            }
-
-            addHotkeyEventListener(tab);
-        }
+    let tab = findTabForDocument(document);
+    if (plugIntoDocument(document, tab)) {
+		if (tab.getAttribute(ENT_MUTED_ATTRIBUTE) === "true") {
+			toggleMuteMediaElementsInDocument(document, true);
+		}
+        updateTabState(tab);
     }
 }
 
 function onPageHide(event) {
     let document = event.target;
     let tab = findTabForDocument(document);
-
     setTimeout(function() {
         updateTabState(tab);
     }, 100);
@@ -486,56 +294,18 @@ function onTabMove(event) {
     updateTabState(tab);
 }
 
-function onTabSelect(event) {
+function fixCloseTabButton(event) {
     let tab = event.target;
-    fixIconOrdinal(tab);
-}
-
-function onTabModified(event) {
-    let tab = event.target;
-    fixCloseTabButton(tab);
-}
-
-function fixCloseTabButton(tab) {
-    if (!hasTabIcon(tab)) return;
-
-    let document = tab.ownerDocument;
-    let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
-
-    if (tab.selected) {
-        closeButton.setAttribute("selected", true);
-    } else {
-        closeButton.removeAttribute("selected");
-    }
-
-    if (tab.pinned) {
-        closeButton.removeAttribute("fadein");
-    } else {
-        closeButton.setAttribute("fadein", true);
-    }
-}
-
-function fixIconOrdinal(tab) {
-    if (!hasTabIcon(tab)) return;
-    
-    setTimeout(function() {
+    if (hasTabIcon(tab)) {
         let document = tab.ownerDocument;
-        let tabLabel = document.getAnonymousElementByAttribute(tab, "class", "tab-text tab-label");
-        if (tabLabel.ordinal) { // Tree Style Tab fix
-            let entIcon = document.getAnonymousElementByAttribute(tab, "class", ENT_ICON_CLASS);
-            entIcon.setAttribute("ordinal", Number(tabLabel.ordinal) + 1);
+        let closeButton = document.getAnonymousElementByAttribute(tab, "class", "tab-close-button close-icon");
 
-            // force icon element redraw after ordinal change
-            if (entIcon.style.display == "inherit") {
-                entIcon.style.display = "inline";
-                setTimeout(function() {
-                    if (entIcon.style.display != "none") {
-                        entIcon.style.display = "inherit";
-                    }
-                }, 0);
-            }
+        if (tab.selected) {
+            closeButton.setAttribute("selected", true);
+        } else {
+            closeButton.removeAttribute("selected");
         }
-    }, 100);
+    }
 }
 
 let tabContextMenuPopupShowingListener = function(e) {
@@ -566,11 +336,9 @@ function plugIntoTabContextMenu(window) {
 function unplugFromTabContextMenu(window) {
     let document = window.document;
     let muteTabMenuItem = document.getElementById(ENT_CONTEXT_MENU_ITEM);
-    if (muteTabMenuItem) {
-        let tabContextMenu = window.gBrowser.tabContextMenu;
-        tabContextMenu.removeEventListener("popupshowing", tabContextMenuPopupShowingListener);
-        tabContextMenu.removeChild(muteTabMenuItem);
-    }
+    let tabContextMenu = window.gBrowser.tabContextMenu;
+    tabContextMenu.removeEventListener("popupshowing", tabContextMenuPopupShowingListener);
+    tabContextMenu.removeChild(muteTabMenuItem);
 }
 
 function initTabsForWindow(window) {
@@ -578,18 +346,11 @@ function initTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         plugIntoTab(tab);
     }
-
-    if (Prefs.getValue("enableTabContextMenuEntry")) {
-        plugIntoTabContextMenu(window);
-    }
-
+	plugIntoTabContextMenu(window);
+    tabBrowser.addEventListener("DOMContentLoaded", onDocumentLoad, true);
     tabBrowser.addEventListener("pagehide", onPageHide, true);
-    tabBrowser.addEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.addEventListener("TabMove", onTabMove, false);
-    tabBrowser.tabContainer.addEventListener("TabSelect", onTabSelect, false);
-    tabBrowser.tabContainer.addEventListener("TabAttrModified", onTabModified, false);
-    tabBrowser.tabContainer.addEventListener("TabPinned", onTabModified, false);
-    tabBrowser.tabContainer.addEventListener("TabUnpinned", onTabModified, false);
+    tabBrowser.tabContainer.addEventListener("TabAttrModified", fixCloseTabButton, false);
 }
 
 function clearTabsForWindow(window) {
@@ -597,26 +358,19 @@ function clearTabsForWindow(window) {
     for (let tab of tabBrowser.tabs) {
         unplugFromTab(tab);
     }
-
-    unplugFromTabContextMenu(window);
-
+	unplugFromTabContextMenu(window);
+    tabBrowser.removeEventListener("DOMContentLoaded", onDocumentLoad, true);
     tabBrowser.removeEventListener("pagehide", onPageHide, true);
-    tabBrowser.removeEventListener("readystatechange", onDocumentLoad, true);
     tabBrowser.tabContainer.removeEventListener("TabMove", onTabMove, false);
-    tabBrowser.tabContainer.removeEventListener("TabSelect", onTabSelect, false);
-    tabBrowser.tabContainer.removeEventListener("TabAttrModified", onTabModified, false);
-    tabBrowser.tabContainer.removeEventListener("TabPinned", onTabModified, false);
-    tabBrowser.tabContainer.removeEventListener("TabUnpinned", onTabModified, false);
+    tabBrowser.tabContainer.removeEventListener("TabAttrModified", fixCloseTabButton, false);
 }
 
 let windowListener = {
     onOpenWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                           .getInterface(Components.interfaces.nsIDOMWindow);
-
+                              .getInterface(Components.interfaces.nsIDOMWindow);
         window.addEventListener("load", function() {
             window.removeEventListener("load", arguments.callee, false);
-
             if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
                 initTabsForWindow(window);
             }
@@ -625,8 +379,7 @@ let windowListener = {
 
     onCloseWindow: function(nsIObj) {
         let window = nsIObj.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                           .getInterface(Components.interfaces.nsIDOMWindow);
-
+                              .getInterface(Components.interfaces.nsIDOMWindow);
         if (window.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
             clearTabsForWindow(window);
         }
@@ -639,13 +392,11 @@ function initWindows() {
         let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
         initTabsForWindow(window);
     }
-
     Services.wm.addListener(windowListener);
 }
 
 function clearWindows() {
     Services.wm.removeListener(windowListener);
-
     let windowsEnumerator = Services.wm.getEnumerator("navigator:browser");
     while (windowsEnumerator.hasMoreElements()) {
         let window = windowsEnumerator.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -654,33 +405,10 @@ function clearWindows() {
 }
 
 function startup(data, reason) {
-    let Imports = {};
-    Components.utils.import("chrome://" + EXT_NAME + "/content/modules/prefs.js", Imports);
-
-    Prefs = new Imports.Prefs(DEFAULT_PREFS, EXT_NAME);
-
-    Services.obs.addObserver(Prefs.onOpen, "entPrefsOpen", false);
-    Services.obs.addObserver(Prefs.onReset, "entPrefsReset", false);
-
-    onPrefsApply = {
-        observe: function(aSubject, aTopic, aData) {
-            Prefs.onApply.observe(aSubject, aTopic, aData);
-            clearWindows();
-            initWindows();
-        }
-    };
-
-    Services.obs.addObserver(onPrefsApply, "entPrefsApply", false);
-
-    Prefs.init();
     initWindows();
 }
 
 function shutdown(data, reason) {
-    Services.obs.removeObserver(Prefs.onOpen, "entPrefsOpen");
-    Services.obs.removeObserver(Prefs.onReset, "entPrefsReset");
-    Services.obs.removeObserver(onPrefsApply, "entPrefsApply");
-
     clearWindows();
 }
 
